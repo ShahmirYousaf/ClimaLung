@@ -1,5 +1,6 @@
 import React from 'react'
 import './Sidebar.css'
+import doctor from '../../Assets/Doctor.png'
 
 function Sidebar() {
   return (
@@ -18,12 +19,12 @@ function Sidebar() {
         
       </div>
       <nav className="sidebar-nav">
-        <h2>Our Products</h2>
+        <h2>Analysis Tools</h2>
         <ul>
           <li>🩻 CT Scan Analysis</li>
           <li>🌬️ Air Quality Analysis</li>
         </ul>
-        <h2>Previous Chats</h2>
+        <h2>User Resources</h2>
         <ul>
           <li>⬆️ Upload CT-Scans</li>
           {/* <li>🩺 Get a monthly check-up</li> */}
@@ -38,10 +39,10 @@ function Sidebar() {
         <div className="settings">⚙️ Settings</div>
         <div className="profile">
           <img
-            src="https://via.placeholder.com/150"
+            src= {doctor}
             alt="Profile"
           />
-          <span>Andrew Neilson</span>
+          <span>Dr Shahmir Yousaf</span>
         </div>
       </div>
     </aside>

@@ -7,7 +7,7 @@
   left: 0;
   height: 100vh; 
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  border-radius: 40px;
+  border-radius: 45px;
   display: flex;
   flex-direction: column;
   overflow-y: auto; 
@@ -18,13 +18,14 @@
   flex-direction: column; 
   align-items: center;    
   justify-content: flex-start; 
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .sidebar-heading {
+  margin-top: 10px;
   font-size: 24px;
   font-weight: 550;
-  margin-bottom: 16px;
+  margin-bottom: 15px;
   text-align: center; 
   width: 100%;
 }
@@ -51,7 +52,6 @@
   padding: 8px 12px 8px 12px;
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
-  margin-left: -15px;
 }
 
 .search-icon {
@@ -65,9 +65,9 @@
 }
 
 .sidebar-nav h2 {
-  font-weight: 470;
-  margin-top: 8px;
-  font-size: 22px;
+  font-weight: 490;
+  margin-top: 7px;
+  font-size: 20px;
 }
 
 .sidebar-nav ul {
@@ -83,12 +83,12 @@
 }
 
 .sidebar-nav ul li:hover {
-  background-color: #e0e7ff;
+  background-color: #2482A6;
   border-radius: 5px;
 }
 
 .sidebar-footer {
-  margin-top: 15px;
+  margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid #e0e7ff;
 }
@@ -100,14 +100,14 @@
 }
 
 .settings:hover {
-  background-color: #e0e7ff;
+  background-color: #2482A6;
   border-radius: 5px;
 }
 
 .profile {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .profile img {
