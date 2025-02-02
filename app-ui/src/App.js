@@ -1,15 +1,16 @@
 import './App.css';
-import Sidebar from "./Components/Sidebar/Sidebar";
-import ChatBar from './Components/ChatBar/ChatBar';
-import Dashboard from './Components/Dashboard/Dashboard';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Dashboard from './Pages/Dashboard/Dashboard';
+import ChatPage from './Pages/ChatPage/ChatPage';
 
 function App() {
   return (
-    <div className="app-container">
-    <Sidebar />
-    <Dashboard/>
-    <ChatBar/>
-  </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/ChatPage" element={<ChatPage />} />
+      </Routes>
+    </Router>
   );
 }
 

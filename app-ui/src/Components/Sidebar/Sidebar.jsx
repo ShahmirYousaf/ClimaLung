@@ -1,13 +1,23 @@
 import React from 'react'
 import './Sidebar.css'
+import { useNavigate } from 'react-router-dom'
 import doctor from '../../Assets/Doctor.png'
+import { Link } from "react-router";
 
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleNewChat = () => {
+    navigate("/ChatPage");
+  }
+
   return (
     <aside className="sidebar">
     <div className="sidebar-header">
-        <h1 className='sidebar-heading'>ClimaLung</h1>
-        <button className="new-chat-btn">+ New Chat</button>
+        <Link to = "/" className='sidebar-heading'>ClimaLung</Link>
+        <button className="new-chat-btn" onClick={handleNewChat}>
+          + New Chat
+          </button>
         <div className="search-box">
           <input
             type="text"
@@ -27,7 +37,6 @@ function Sidebar() {
         <h2>User Resources</h2>
         <ul>
           <li>⬆️ Upload CT-Scans</li>
-          {/* <li>🩺 Get a monthly check-up</li> */}
           <li>❓ How to use ClimaLung?</li>
         </ul>
         <h2>Accounts</h2>
