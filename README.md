@@ -1,2 +1,0 @@
-# ClimaLung
-FYP Project
