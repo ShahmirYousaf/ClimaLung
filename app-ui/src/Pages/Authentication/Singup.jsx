@@ -1,15 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate  } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../../Firebase';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 import './LoginSignup.css';
-import Logo from '../../Assets/ClimaLung-logo.png'
+import Swal from "sweetalert2";
 
 const Signup = () => {
   const formRef = useRef(null);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     gsap.fromTo(formRef.current, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1 });
@@ -21,10 +23,22 @@ const Signup = () => {
     const password = event.target.password.value;
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // Handle redirection or user session
+        Swal.fire({
+          title: 'Signup Successful!',
+          text: 'You have successfully signed up.',
+          icon: 'success',
+          confirmButtonText: 'Proceed to Login',
+        }).then(() => {
+          navigate('/login'); // Redirect to login page
+        });
       })
       .catch((error) => {
-        console.error('Error signing up:', error);
+        Swal.fire({
+          title: 'Signup Failed',
+          text: error.message,
+          icon: 'error',
+          confirmButtonText: 'Try Again',
+        });
       });
   };
 
@@ -53,7 +67,7 @@ const Signup = () => {
 
   return (
     <div className="auth-container">
-      <img src={Logo} alt="Logo" className="logo" />
+      <img src={`${process.env.PUBLIC_URL}/ClimaLung-logo.png`} alt="Logo" className="logo" />
       <div className="auth-form" ref={formRef}>
         <h2 className='main-heading'>Sign Up </h2>
         <form onSubmit={handleSignup}>

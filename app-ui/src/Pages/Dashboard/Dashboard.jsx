@@ -1,6 +1,5 @@
 import React from 'react'
 import './Dashboard.css'
-import logo from '../../Assets/ClimaLung-logo.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from '../../Components/Sidebar/Sidebar';
@@ -12,7 +11,7 @@ function Dashboard() {
       <Sidebar/>
     <main className="main-content">
     <div className="header">
-      <img src={logo} alt="ClimaLung Logo" className="logo" />
+      <img src={`${process.env.PUBLIC_URL}/ClimaLung-logo.png`} alt="ClimaLung Logo" className="logo" />
       <h1>Good day! How may I assist you today?</h1>
     </div>
     <div className="cards">

@@ -1,28 +1,65 @@
 .chatBar {
-    position: fixed;        
-    bottom: 5%;         
-    left: 57%;                
-    display: flex;
-    justify-content: center;
+  position: fixed;        
+  bottom: 5%;         
+  left: 60%;                /* Center horizontally */
+  display: flex;
+  justify-content: space-between;  /* Space between input and button */
+  align-items: center;         /* Vertically center the elements */
+  transform: translateX(-50%);
+  width: 90%;                  /* Set width to 90% for responsiveness */
+  max-width: 500px;            /* Max width to avoid overflow */
+  padding: 10px;
+}
+
+.chat-input {
+  width: 85%;                  /* Allow the input field to take 80% of the container */
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 15px;
+  font-size: 16px;
+}
+
+.send-btn {
+  background-color: #2482A6;
+  color: white;
+  padding: 10px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  width: 10%;                  /* Button takes the remaining space */
+  margin-left: 6px;           /* Space between input and button */
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .chatBar {
+    bottom: 10%;                /* Increase bottom margin on smaller screens */
+    width: 70%;                  /* Adjust the width on smaller screens */
+    left: 68%;
+    justify-content:center;
     transform: translateX(-50%);
-    width: 100%;
   }
-  
+
   .chat-input {
-    width: 100%;
-    max-width: 500px;
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 15px;
-    // font-size: 16px;
+    width: 65%;                  /* Make the input field wider on mobile */
   }
-  
+
   .send-btn {
-    background-color:  #2482A6;
-    color: white;
-    padding: 10px;
-    border-radius: 15px;
-    border: none;
-    margin-left: 10px;
-    cursor: pointer;
+    width: 15%;                  /* Decrease the button size on mobile */
   }
+}
+
+@media (max-width: 480px) {
+  .chatBar {
+    width: 90%;                  /* Adjust width for very small screens */
+    bottom: 12%;                 /* Increase bottom margin for better visibility */
+  }
+
+  .chat-input {
+    width: 60%;                  /* Increase input width on very small screens */
+  }
+
+  .send-btn {
+    width: 30%;                  /* Make the button a little wider */
+  }
+}

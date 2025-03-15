@@ -1,25 +1,27 @@
-.ChatPage-container{
+.ChatPage-container {
   display: flex;
   width: 100%;
   height: 100vh;
   background-color: #F3F4F6;
+  flex-wrap: wrap;
 }
 
-/* Chat messages box */
 .chat-messages {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 20px;
-  margin-left: 200px;
+  margin-left: 250px;  /* Adjust sidebar space for larger screens */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Glassy Chat window styling */
 .chat-box {
-  width: 600px; /* Adjust width as needed */
-  height: 500px; /* Fixed height */
+  width: 600px; /* Default width for larger screens */
+  height: 500px; /* Fixed height for chatbox */
   background: rgba(36, 130, 166, 0.2); /* Transparent bluish */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0.1, 0.1, 0.1, 0.2);
@@ -79,4 +81,58 @@
 
 .chat-box::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Media Queries for Responsiveness */
+
+/* On screens less than 768px, adjust layout */
+@media (max-width: 768px) {
+  .ChatPage-container {
+    flex-direction: column; /* Stack the sidebar and content */
+  }
+
+  .chat-messages {
+    margin-left: 220px;           /* Remove left margin for smaller screens */
+    padding: 15px;
+    width: 70%;              /* Full width for smaller screens */
+    margin-top: 20px;
+  }
+
+  .chat-box {
+    width: 90%;               /* Make the chat box take up 90% of the screen */
+    max-width: 500px;         /* Set a maximum width for the chat box */
+    height: 400px;            /* Adjust height for smaller screens */
+  }
+
+  .user-message, .bot-message {
+    font-size: 14px;          /* Smaller font size for better readability */
+    padding: 10px;            /* Reduce padding inside message bubbles */
+  }
+}
+
+/* On extra small screens (less than 480px), adjust further */
+@media (max-width: 480px) {
+  .chat-messages {
+    padding: 10px;
+    margin-left: 200px;  /* Remove margin for the entire container */
+    margin-top: 15px;
+  }
+
+  .chat-box {
+    width: 100%;               /* Make chat box take full width */
+    height: 350px;             /* Adjust height to fit smaller screens */
+  }
+
+  .user-message, .bot-message {
+    font-size: 12px;           /* Further reduce font size */
+    padding: 8px;              /* Further reduce padding */
+  }
+
+  .chat-box::-webkit-scrollbar {
+    width: 5px;  /* Adjust scrollbar width for mobile */
+  }
+
+  .chat-box::-webkit-scrollbar-thumb {
+    background: #aaa;
+  }
 }

@@ -3,15 +3,17 @@
   width: 100%;
   height: 100vh;
   background-color: #F3F4F6;
+  flex-wrap: wrap; /* Allows content to wrap when needed on smaller screens */
 }
 
 .main-content {
-  margin-left: 200px;
+  margin-left: 250px; /* Adjust sidebar space */
   padding: 20px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%; /* Ensures the main content fills the remaining space */
 }
 
 .logo {
@@ -33,6 +35,8 @@
   display: flex;
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
+  flex-wrap: wrap; /* Allows the cards to wrap on smaller screens */
+  gap: 20px; /* Adds space between the cards */
 }
 
 .card {
@@ -41,7 +45,8 @@
   padding: 20px;
   border-radius: 5px;
   text-align: center;
-  width: 350px;
+  width: 300px; /* Adjust width of the cards */
+  margin-bottom: 20px; /* Adds margin at the bottom */
 }
 
 .card h2 {
@@ -62,4 +67,54 @@
   border-radius: 5px;
   border: none;
   cursor: pointer;
+}
+
+/* Media Queries for Responsiveness */
+/* On smaller screens (less than 768px), the sidebar is hidden, and layout is adjusted */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column; /* Stack the sidebar and main content */
+  }
+  .main-content {
+    margin-left: 100px; /* Remove left margin for main content */
+    padding: 15px;
+  }
+  .logo {
+    width: 140px;
+    height: 140px; /* Reduce logo size for small screens */
+  }
+  .header h1 {
+    font-size: 22px; /* Reduce header font size */
+  }
+  .cards {
+    flex-direction: column; /* Stack cards vertically on small screens */
+    gap: 15px; /* Reduce gap between cards */
+    width: 100%; /* Make the cards container take full width */
+    margin-top: 20px;
+  }
+  .card {
+    width: 280px; /* Make cards take up more space */
+    max-width: 400px; /* Set a max-width for cards */
+  }
+  .card-btn {
+    width: 80%; /* Make button take full width */
+    padding: 12px; /* Increase padding */
+  }
+}
+/* On extra small screens (less than 480px), further adjust layout */
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 20px; /* Further reduce font size */
+  }
+  .card {
+    width: 100%; /* Make the card take up full width */
+  }
+  .card-btn {
+    font-size: 14px; /* Reduce font size for the button */
+    padding: 10px; /* Decrease button padding */
+  }
+  .logo {
+    width: 120px; /* Reduce logo size more */
+    height: 120px;
+  }
 }/*# sourceMappingURL=Dashboard.css.map */

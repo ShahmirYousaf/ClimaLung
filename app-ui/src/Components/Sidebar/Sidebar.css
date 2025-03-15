@@ -11,6 +11,11 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  transform: translateX(-100%);
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-header {
@@ -120,6 +125,51 @@
 }
 
 .profile span {
-  font-size: 14px;
+  font-size: 12px;
   color: #333;
+}
+
+/* Media Queries for Responsiveness */
+/* On smaller screens, hide the sidebar by default */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 30%;
+    transform: translateX(-100%); /* Initially hide the sidebar */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+  }
+  /* Show the sidebar when toggled */
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-header .sidebar-heading {
+    font-size: 18px;
+  }
+  .profile span {
+    font-size: 8px;
+  }
+  .search-input {
+    width: 70%;
+  }
+  /* Sidebar footer adjustments */
+  .sidebar-footer {
+    padding: 0 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+}
+/* Button for sidebar toggler */
+.sidebar-toggler {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #2482A6;
+  cursor: pointer;
+  z-index: 1000;
 }/*# sourceMappingURL=Sidebar.css.map */
