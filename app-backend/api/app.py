@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 import requests
 from dotenv import load_dotenv
 import os
-from flask_vercel import Vercel
 
 app = Flask(__name__)
 
