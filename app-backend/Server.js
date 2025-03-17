@@ -41,9 +41,9 @@ app.get("/get-token", async (req, res) => {
     }
 });
 
-// app.get("/", (req, res) => {
-//     res.send("Server is working!");
-// });
+app.get("/", (req, res) => {
+    res.send("Server is working!");
+});
 
 
-app.listen(8000, () => console.log("Server running on port 8000"));
+//app.listen(8000, () => console.log("Server running on port 8000"));
