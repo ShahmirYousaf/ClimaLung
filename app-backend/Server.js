@@ -5,7 +5,7 @@ require("dotenv").config();
 
 const app = express();
 app.use(cors({
-  origin: 'https://clima-lung.vercel.app',  // Replace with your Vercel app URL
+  origin: 'https://clima-lung.vercel.app',  
 }));
 app.use(express.json());
 
