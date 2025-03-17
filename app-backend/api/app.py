@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import requests
 from dotenv import load_dotenv
 import os
+from flask_vercel import Vercel
 
 app = Flask(__name__)
 
@@ -49,5 +50,8 @@ def webhook():
 
     return jsonify({'fulfillmentText': fulfillment_text})
 
-if __name__ == '__main__':
-    app.run(port=5000)
+# if __name__ == '__main__':
+#     app.run(port=5000)
+
+# Expose the Flask app for Vercel deployment
+application = app
