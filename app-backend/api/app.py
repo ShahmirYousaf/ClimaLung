@@ -36,6 +36,7 @@ def get_aqi(lat, lon):
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    print("Webhook endpoint hit!")
     req = request.get_json()
     parameters = req.get('queryResult').get('parameters')
     lat = parameters.get('latitude')
