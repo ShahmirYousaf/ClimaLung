@@ -1,14 +1,14 @@
 .chatBar {
   position: fixed;
   bottom: 5%;
-  left: 60%; /* Center horizontally */
+  left: 57%; /* Center horizontally */
   display: flex;
   justify-content: space-between; /* Space between input and button */
   align-items: center; /* Vertically center the elements */
   transform: translateX(-50%);
   width: 90%; /* Set width to 90% for responsiveness */
   max-width: 500px; /* Max width to avoid overflow */
-  padding: 10px;
+  padding: 6px;
 }
 
 .chat-input {
