@@ -5,6 +5,7 @@ import doctor from '../../Assets/Doctor.png'
 import { Link } from "react-router";
 import { signOut } from 'firebase/auth';
 import { auth } from '../../Firebase';
+import Swal from "sweetalert2";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -23,14 +24,30 @@ function Sidebar() {
   }
 
   const handleLogout = () => {
-    signOut(auth)
+     Swal.fire(
+      {title: 'Are you sure?',
+      text: "You won't be able to revert this action!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2482A6',
+      cancelButtonColor: '#ff0000',
+      confirmButtonText: 'Yes, log out!'
+    }).then(() => {
+      signOut(auth)
       .then(() => {
+        Swal.fire(
+          'Logged Out!',
+          'You have been logged out.',
+          'success'
+        );
         navigate('/login');
       })
       .catch((error) => {
         console.error('Error logging out:', error);
       });
-  };
+      }
+  );
+}
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen); // Toggle sidebar open state

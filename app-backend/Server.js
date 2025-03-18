@@ -5,7 +5,9 @@ require("dotenv").config();
 
 const app = express();
 app.use(cors({
-  origin: 'https://clima-lung.vercel.app',  
+  origin: 'https://clima-lung.vercel.app', 
+  methods: ['GET', 'POST', 'OPTIONS'],
+allowedHeaders: ['Content-Type', 'Authorization'], 
 }));
 app.use(express.json());
 
