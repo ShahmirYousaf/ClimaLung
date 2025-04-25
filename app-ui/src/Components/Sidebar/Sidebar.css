@@ -173,3 +173,8 @@
   cursor: pointer;
   z-index: 1000;
 }/*# sourceMappingURL=Sidebar.css.map */
+
+.sidebar-nav-list{
+  text-decoration: none;
+  color: black;
+}

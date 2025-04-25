@@ -4,6 +4,7 @@ import Dashboard from './Pages/Dashboard/Dashboard';
 import ChatPage from './Pages/ChatPage/ChatPage';
 import Signup from './Pages/Authentication/Singup';
 import Login from './Pages/Authentication/Login';
+import AirQualityAnalysis from './Pages/AirQualityAnalysis/AirQualityAnalysis';
 import { useContext } from 'react';
 import AuthContext from './AuthContext';
 
@@ -24,6 +25,7 @@ function App() {
         {/* Protected Routes */}
         <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/chatpage" element={user ? <ChatPage /> : <Navigate to="/login" />} />
+        <Route path="/air-quality-analysis" element={user ? <AirQualityAnalysis /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );

@@ -79,7 +79,8 @@ function Sidebar() {
         <h2>Analysis Tools</h2>
         <ul>
           <li>🩻 CT Scan Analysis</li>
-          <li>🌬️ Air Quality Analysis</li>
+          <li><Link to="/air-quality-analysis" className='sidebar-nav-list'>🌬️ Air Quality Analysis</Link>
+          </li>
         </ul>
         <h2>User Resources</h2>
         <ul>
