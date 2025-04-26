@@ -1,0 +1,118 @@
+$main-color: #2482a6;
+$light-bg: #f4f7fc;
+$dark-bg: #2f3e46;
+$text-color: #333;
+
+.how-to-use-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .page-title {
+    font-size: 3rem;
+    color: $main-color;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .page-description {
+    font-size: 1.2rem;
+    color: $text-color;
+    text-align: center;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .module-section {
+    margin-bottom: 50px;
+
+    .module-title {
+      font-size: 2rem;
+      color: $main-color;
+      margin-bottom: 10px;
+    }
+
+    .module-description {
+      font-size: 1.1rem;
+      color: $text-color;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .module-button {
+      text-align: center;
+
+      .module-btn {
+        background-color: $main-color;
+        color: white;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: darken($main-color, 10%);
+        }
+      }
+    }
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 1rem;
+    color: $dark-bg;
+    margin-top: 30px;
+    padding: 20px;
+    background-color: $light-bg;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .how-to-use-container {
+    padding: 20px;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+  }
+
+  .module-title {
+    font-size: 1.7rem;
+  }
+
+  .module-description {
+    font-size: 1rem;
+  }
+
+  .footer {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .how-to-use-container {
+    padding: 15px;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .module-title {
+    font-size: 1.5rem;
+  }
+
+  .module-description {
+    font-size: 0.9rem;
+  }
+
+  .footer {
+    font-size: 0.8rem;
+  }
+}

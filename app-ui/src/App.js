@@ -7,6 +7,9 @@ import Login from './Pages/Authentication/Login';
 import AirQualityAnalysis from './Pages/AirQualityAnalysis/AirQualityAnalysis';
 import { useContext } from 'react';
 import AuthContext from './AuthContext';
+import PatientDataAnalysis from './Pages/PatientDataAnalysis/PatientDataAnalysis';
+import About from './Pages/About/About';
+import HowToUse from './Pages/HowToUse/HowToUse';
 
 function App() {
   const { user, loading } = useContext(AuthContext);
@@ -26,6 +29,9 @@ function App() {
         <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/chatpage" element={user ? <ChatPage /> : <Navigate to="/login" />} />
         <Route path="/air-quality-analysis" element={user ? <AirQualityAnalysis /> : <Navigate to="/login" />} />
+        <Route path="/patient-data-analysis" element={user ? <PatientDataAnalysis /> : <Navigate to="/login" />} />
+        <Route path="/about" element={user ? <About /> : <Navigate to="/login" />} />
+        <Route path="/how-to-use" element={user ? <HowToUse/> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );

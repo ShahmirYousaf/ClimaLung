@@ -1,0 +1,109 @@
+.about-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.about-container .about-title {
+  font-size: 3rem;
+  color: #2482a6;
+  text-align: center;
+  margin-bottom: 30px;
+}
+.about-container .about-description {
+  font-size: 1.2rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+.about-container .about-cards {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+.about-container .about-cards .card {
+  background-color: #f4f7fc;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  max-width: 30%;
+  min-width: 250px;
+}
+.about-container .about-cards .card:hover {
+  background-color: #e1eff9;
+}
+.about-container .about-cards .card .card-icon {
+  font-size: 2rem;
+  color: #2482a6;
+  margin-bottom: 10px;
+}
+.about-container .about-cards .card .card-title {
+  font-size: 1.5rem;
+  color: #2482a6;
+  margin-bottom: 10px;
+}
+.about-container .about-cards .card .card-description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.4;
+}
+.about-container .team-section {
+  margin-top: 50px;
+  text-align: center;
+}
+.about-container .team-section .team-title, .about-container .team-section .supervisor-title {
+  font-size: 2rem;
+  color: #2482a6;
+  margin-bottom: 20px;
+}
+.about-container .team-section .team-members, .about-container .team-section .supervisors {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.about-container .team-section .team-members .team-member, .about-container .team-section .team-members .supervisor, .about-container .team-section .supervisors .team-member, .about-container .team-section .supervisors .supervisor {
+  text-align: center;
+  max-width: 200px;
+  margin: 10px 0;
+}
+.about-container .team-section .team-members .team-member .team-member-name, .about-container .team-section .team-members .team-member .supervisor-name, .about-container .team-section .team-members .supervisor .team-member-name, .about-container .team-section .team-members .supervisor .supervisor-name, .about-container .team-section .supervisors .team-member .team-member-name, .about-container .team-section .supervisors .team-member .supervisor-name, .about-container .team-section .supervisors .supervisor .team-member-name, .about-container .team-section .supervisors .supervisor .supervisor-name {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+.about-container .team-section .team-members .team-member .team-member-role, .about-container .team-section .team-members .team-member .supervisor-role, .about-container .team-section .team-members .supervisor .team-member-role, .about-container .team-section .team-members .supervisor .supervisor-role, .about-container .team-section .supervisors .team-member .team-member-role, .about-container .team-section .supervisors .team-member .supervisor-role, .about-container .team-section .supervisors .supervisor .team-member-role, .about-container .team-section .supervisors .supervisor .supervisor-role {
+  font-size: 1rem;
+  color: #777;
+}
+
+@media (max-width: 768px) {
+  .about-cards {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .card {
+    max-width: 80%;
+    margin: 0 auto;
+  }
+  .team-members, .supervisors {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+@media (max-width: 480px) {
+  .about-title {
+    font-size: 2rem;
+  }
+  .about-description {
+    font-size: 1rem;
+  }
+  .card-title {
+    font-size: 1.2rem;
+  }
+  .card-description {
+    font-size: 0.9rem;
+  }
+}/*# sourceMappingURL=About.css.map */

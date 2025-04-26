@@ -1,0 +1,89 @@
+.predict-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+.predict-container h1 {
+  text-align: center;
+  color: #2482A6;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+.predict-container .input-group {
+  margin-bottom: 20px;
+}
+.predict-container .input-group label {
+  font-weight: bold;
+  color: #2482A6;
+  display: block;
+  margin-bottom: 5px;
+}
+.predict-container .input-group input,
+.predict-container .input-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.predict-container .input-group input:focus,
+.predict-container .input-group select:focus {
+  border-color: #2482A6;
+}
+.predict-container .predict-btn {
+  background-color: #2482A6;
+  color: white;
+  padding: 15px 20px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.predict-container .predict-btn:hover {
+  background-color: #1b617c;
+}
+.predict-container .prediction-result {
+  margin-top: 30px;
+  text-align: center;
+  padding: 20px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+.predict-container .prediction-result h2 {
+  color: #2482A6;
+}
+.predict-container .prediction-result p {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+@media (max-width: 768px) {
+  .predict-container {
+    padding: 15px;
+  }
+  .predict-container h1 {
+    font-size: 1.5rem;
+  }
+  .predict-container .input-group label {
+    font-size: 1rem;
+  }
+  .predict-container .input-group input,
+  .predict-container .input-group select {
+    font-size: 1rem;
+    padding: 10px;
+  }
+  .predict-container .predict-btn {
+    font-size: 1.2rem;
+    padding: 12px;
+  }
+  .predict-container .prediction-result {
+    font-size: 1rem;
+  }
+}/*# sourceMappingURL=PatientDataAnalysis.css.map */

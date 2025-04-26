@@ -1,4 +1,4 @@
-.dashboard-container {
+.dashboard-container-main {
   display: flex;
   width: 100%;
   height: 100vh;
@@ -6,7 +6,7 @@
   flex-wrap: wrap; /* Allows content to wrap when needed on smaller screens */
 }
 
-.main-content {
+.main-content-dashboard {
   margin-left: 250px; /* Adjust sidebar space */
   padding: 20px;
   flex-grow: 1;
@@ -16,22 +16,22 @@
   width: 100%; /* Ensures the main content fills the remaining space */
 }
 
-.logo {
-  width: 200px;
-  height: 200px;
+.logo-dashboard {
+  width: 170px;
+  height: 170px;
 }
 
-.header {
+.header-dashboard {
   text-align: center;
   margin-bottom: 40px;
 }
 
-.header h1 {
+.header-dashboard h1 {
   font-size: 28px;
   font-weight: bold;
 }
 
-.cards {
+.cards-dashboard {
   display: flex;
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
@@ -39,7 +39,7 @@
   gap: 20px; /* Adds space between the cards */
 }
 
-.card {
+.card-dashboard {
   background-color: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   padding: 20px;
@@ -49,13 +49,13 @@
   margin-bottom: 20px; /* Adds margin at the bottom */
 }
 
-.card h2 {
+.card-dashboard h2 {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
-.card p {
+.card-dashboard p {
   margin-bottom: 20px;
   font-size: 16px;
 }
@@ -72,27 +72,27 @@
 /* Media Queries for Responsiveness */
 /* On smaller screens (less than 768px), the sidebar is hidden, and layout is adjusted */
 @media (max-width: 768px) {
-  .dashboard-container {
+  .dashboard-container-main {
     flex-direction: column; /* Stack the sidebar and main content */
   }
-  .main-content {
+  .main-content-dashboard {
     margin-left: 100px; /* Remove left margin for main content */
     padding: 15px;
   }
-  .logo {
+  .logo-dashboard {
     width: 140px;
     height: 140px; /* Reduce logo size for small screens */
   }
-  .header h1 {
+  .header-dashboard h1 {
     font-size: 22px; /* Reduce header font size */
   }
-  .cards {
+  .cards-dashboard {
     flex-direction: column; /* Stack cards vertically on small screens */
     gap: 15px; /* Reduce gap between cards */
     width: 100%; /* Make the cards container take full width */
     margin-top: 20px;
   }
-  .card {
+  .card-dashboard {
     width: 280px; /* Make cards take up more space */
     max-width: 400px; /* Set a max-width for cards */
   }
@@ -103,17 +103,17 @@
 }
 /* On extra small screens (less than 480px), further adjust layout */
 @media (max-width: 480px) {
-  .header h1 {
+  .header-dashboard h1 {
     font-size: 20px; /* Further reduce font size */
   }
-  .card {
+  .card-dashboard {
     width: 100%; /* Make the card take up full width */
   }
   .card-btn {
     font-size: 14px; /* Reduce font size for the button */
     padding: 10px; /* Decrease button padding */
   }
-  .logo {
+  .logo-dashboard {
     width: 120px; /* Reduce logo size more */
     height: 120px;
   }

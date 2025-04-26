@@ -23,7 +23,8 @@
   flex-direction: column; 
   align-items: center;    
   justify-content: flex-start; 
-  margin-bottom: 18px;
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
 
 .sidebar-heading {
@@ -31,7 +32,7 @@
   margin-top: 10px;
   font-size: 24px;
   font-weight: 550;
-  margin-bottom: 15px;
+  margin-bottom: 22px;
   text-align: center; 
   width: 100%;
   color: black;
@@ -40,42 +41,35 @@
 
 
 .new-chat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #2482A6;
   color: white;
   padding: 10px;
   border-radius: 15px;
   border: none;
   width: 90%;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   cursor: pointer;
+  
 }
 
-.search-box {
-  position: relative;
-  width: 80%;
-  margin-bottom: 10px;
+.new-chat-btn svg {
+  margin-right: 8px;
 }
 
-.search-input {
+.sidebar-nav-list {
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 8px 12px 8px 12px;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-}
-
-.search-icon {
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 16px;
-  color: #6b7280;
+  text-decoration: none;
+  color: inherit;
 }
 
 .sidebar-nav h2 {
   font-weight: 490;
-  margin-top: 7px;
+  margin-top: 10px;
   font-size: 20px;
 }
 
@@ -91,24 +85,35 @@
   transition: background 0.3s;
 }
 
+.sidebar-nav li {
+  display: flex;
+  align-items: center; /* Vertically align both icon and text */
+}
+
+.sidebar-nav li svg {
+  margin-right: 8px; /* Add some space between icon and text */
+}
+
 .sidebar-nav ul li:hover {
-  background-color: #2482A6;
+  background-color: #3195bd;
   border-radius: 5px;
 }
 
 .sidebar-footer {
-  margin-top: 12px;
+  margin-top: 18px;
   padding-top: 10px;
   border-top: 1px solid #e0e7ff;
 }
 
-.settings {
+.about-sb {
+  display: flex;
+  align-items: center;
   padding: 10px;
   cursor: pointer;
   transition: background 0.3s;
 }
 
-.settings:hover {
+.about-sb:hover {
   background-color: #2482A6;
   border-radius: 5px;
 }
@@ -116,7 +121,7 @@
 .profile {
   display: flex;
   align-items: center;
-  margin-top: 12px;
+  margin-top: 15px;
 }
 
 .profile img {
@@ -129,6 +134,31 @@
 .profile span {
   font-size: 12px;
   color: #333;
+}
+
+.custom-icon-cloud {
+  color: #6fbcff;
+}
+
+.custom-icon-monitor {
+  color: #2b8eb5;
+}
+
+.custom-icon-file {
+  color: red;
+}
+
+.custom-icon-logout {
+  color: yellow;
+}
+
+.custom-icon-about {
+  color: #2482A6;
+  margin-right: 8px;
+}
+
+.custom-icon-user {
+  color:peru;
 }
 
 /* Media Queries for Responsiveness */

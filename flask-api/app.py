@@ -2,12 +2,54 @@ from flask import Flask, request, jsonify
 import requests
 from dotenv import load_dotenv
 import os
+import joblib
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
 app = Flask(__name__)
 
 load_dotenv() 
 
 API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
+
+model = joblib.load('lung_health_model.pkl')
+
+# Load the label encoder (if used during training)
+label_encoder = LabelEncoder()
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Get the input data from the frontend
+    data = request.get_json()
+
+    # Preprocess the input data as done during training
+    input_data = pd.DataFrame([data])
+
+    input_data['Exposure_to_Occupational_Hazards'] = label_encoder.fit_transform(input_data['Exposure_to_Occupational_Hazards'].fillna('No'))
+    input_data['History_Of_Chronic_Respiratory_Diseases'] = label_encoder.fit_transform(input_data['History_Of_Chronic_Respiratory_Diseases'].fillna('No'))
+    input_data['Diagnosed_with_Cancer'] = label_encoder.fit_transform(input_data['Diagnosed_with_Cancer'].fillna('No'))
+    input_data['Lived_In_Highly_Polluted_Area'] = label_encoder.fit_transform(input_data['Lived_In_Highly_Polluted_Area'].fillna('No'))
+    input_data['Shortness_Of_breath'] = label_encoder.fit_transform(input_data['Shortness_Of_breath'].fillna('No'))
+    input_data['Coughed_Blood'] = label_encoder.fit_transform(input_data['Coughed_Blood'].fillna('No'))
+    input_data['Age'] = pd.to_numeric(input_data['Age'], errors='coerce')
+
+    # Feature columns (same as during training)
+    feature_columns = ['Age', 'Exposure_to_Occupational_Hazards', 'History_Of_Chronic_Respiratory_Diseases',
+                       'Lived_In_Highly_Polluted_Area', 'Shortness_Of_breath', 'Coughed_Blood', 
+                       'PM2.5 (ug/m^3)', 'PM10 (ug/m^3)', 'AQI', 'NO2 (ppb)', 'SO2 (ppb)', 'CO (ppb)']
+    
+    input_data = input_data[feature_columns]
+
+    # Make prediction using the Random Forest model
+    prediction = model.predict(input_data)
+
+    # Return the result as a JSON response
+    if prediction[0] == 1:
+        result = "Poor Lung Health"
+    else:
+        result = "Good Lung Health"
+    
+    return jsonify({'prediction': result})
 
 def get_aqi(lat, lon):
     url = f'http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={API_KEY}'
