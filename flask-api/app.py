@@ -12,13 +12,33 @@ load_dotenv()
 
 API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 
-model = joblib.load('lung_health_model.pkl')
+MODEL_URL = "https://drive.google.com/uc?export=download&id=1mz1GmedHm4dPDjFV_eYV5gsim2737nGb" 
+MODEL_PATH = "/tmp/lung_health_model.pkl"
+
+# Download model if not exists
+if not os.path.exists(MODEL_PATH):
+    print("Downloading model file...")
+    response = requests.get(MODEL_URL)
+    with open(MODEL_PATH, 'wb') as f:
+        f.write(response.content)
+    print("Model downloaded successfully")
+
+# Load the model
+try:
+    model = joblib.load(MODEL_PATH)
+    print("Model loaded successfully")
+except Exception as e:
+    print(f"Error loading model: {str(e)}")
+    model = None
 
 # Load the label encoder (if used during training)
 label_encoder = LabelEncoder()
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Check if model loaded successfully
+    if model is None:
+        return jsonify({'error': 'Model failed to load'}), 500
     # Get the input data from the frontend
     data = request.get_json()
 
