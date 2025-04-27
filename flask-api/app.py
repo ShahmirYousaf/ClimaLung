@@ -25,7 +25,7 @@ def get_model():
             f.write(response.content)
     
     # Create inference session
-    return onnxruntime.InferenceSession(MODEL_PATH)
+    return onnxruntime.InferenceSession(MODEL_PATH, providers=['CPUExecutionProvider'])
 
 def preprocess_input(data):
     """Convert input data to numpy array (assuming pre-encoded values)"""
