@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 import requests
 from dotenv import load_dotenv
 import os
-import joblib
-import modin.pandas as pd
+import onnxruntime 
+import numpy as np
 from functools import lru_cache
 
 app = Flask(__name__)
@@ -17,43 +17,67 @@ MODEL_PATH = "/tmp/lung_health_model.pkl"
 
 @lru_cache(maxsize=1)
 def get_model():
+    """Download and cache the ONNX model"""
     if not os.path.exists(MODEL_PATH):
-        print("Downloading model...")
+        print("Downloading ONNX model...")
         response = requests.get(MODEL_URL)
         with open(MODEL_PATH, 'wb') as f:
             f.write(response.content)
     
-    return joblib.load(MODEL_PATH)
+    # Create inference session
+    return onnxruntime.InferenceSession(MODEL_PATH)
+
+def preprocess_input(data):
+    """Convert input data to numpy array (assuming pre-encoded values)"""
+    features = [
+        'Age',
+        'Gender',                       
+        'Exposure_to_Occupational_Hazards', 
+        'History_Of_Chronic_Respiratory_Diseases',
+        'Lived_In_Highly_Polluted_Area',
+        'Shortness_Of_breath',
+        'Coughed_Blood',
+        'Persistent_Cough',
+        'Ever_Smoked',
+        'PM2.5 (ug/m^3)',
+        'PM10 (ug/m^3)',
+        'AQI',
+        'NO2 (ppb)',
+        'SO2 (ppb)',
+        'CO (ppb)'
+    ]
+    
+    # Create array with default fallback values
+    input_array = np.array([
+        float(data.get(feature, 0)) if feature in ['Age', 'PM2.5 (ug/m^3)', 'PM10 (ug/m^3)', 
+                                                 'AQI', 'NO2 (ppb)', 'SO2 (ppb)', 'CO (ppb)']
+        else int(data.get(feature, 0))  # For categorical features (0/1/2 encoded)
+        for feature in features
+    ], dtype=np.float32).reshape(1, -1)
+    
+    return input_array
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    try:
-        model = get_model()  # Model loads only when needed
-        # Rest of your prediction code
-    except Exception as e:
+   try:
+        # Get and validate input
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No input data provided'}), 400
+
+        # Preprocess input
+        input_array = preprocess_input(data)
+        
+        # Get model and predict
+        model = get_model()
+        prediction = model.run(None, {'float_input': input_array})[0]
+        
+        # Return result
+        result = "Poor Lung Health" if prediction[0] == 1 else "Good Lung Health"
+        return jsonify({'prediction': result})
+
+   except Exception as e:
         return jsonify({'error': str(e)}), 500
-    # Get the input data from the frontend
-    data = request.get_json()
-
-    # Preprocess the input data as done during training
-    input_data = pd.DataFrame([data])
-
-    feature_columns = ['Age', 'Gender', 'Exposure_to_Occupational_Hazards', 'History_Of_Chronic_Respiratory_Diseases',
-                       'Lived_In_Highly_Polluted_Area', 'Shortness_Of_breath', 'Coughed_Blood', 'Persistent_Cough','Ever_Smoked',
-                       'PM2.5 (ug/m^3)', 'PM10 (ug/m^3)', 'AQI', 'NO2 (ppb)', 'SO2 (ppb)', 'CO (ppb)']
-    
-    input_data = input_data[feature_columns]
-
-    # Make prediction using the Random Forest model
-    prediction = model.predict(input_data)
-
-    # Return the result as a JSON response
-    if prediction[0] == 1:
-        result = "Poor Lung Health"
-    else:
-        result = "Good Lung Health"
-    
-    return jsonify({'prediction': result})
 
 def get_aqi(lat, lon):
     url = f'http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={API_KEY}'
