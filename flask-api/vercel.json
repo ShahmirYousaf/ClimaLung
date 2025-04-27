@@ -1,4 +1,5 @@
 {
     "builds": [{"src": "app.py", "use": "@vercel/python"}],
+    "config": {"maxLambdaSize": "300mb"},
     "routes": [{"src": "/(.*)", "dest": "app.py"}]
 }
