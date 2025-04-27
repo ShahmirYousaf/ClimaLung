@@ -3,7 +3,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import joblib
-import pandas as pd
+import modin.pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from functools import lru_cache
 
