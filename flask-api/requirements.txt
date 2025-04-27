@@ -2,6 +2,5 @@ Flask==3.1.0
 requests==2.32.3
 python-dotenv==0.19.2
 joblib==1.3.2
-scikit-learn-intelex==2023.2.1  # Intel-optimized, smaller version
 modin[ray]==0.23.0
 numpy==1.26.4

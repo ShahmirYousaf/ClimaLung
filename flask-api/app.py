@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 import joblib
 import modin.pandas as pd
-from sklearn.preprocessing import LabelEncoder
 from functools import lru_cache
 
 app = Flask(__name__)
@@ -26,9 +25,6 @@ def get_model():
     
     return joblib.load(MODEL_PATH)
 
-# Load the label encoder (if used during training)
-label_encoder = LabelEncoder()
-
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -41,17 +37,6 @@ def predict():
 
     # Preprocess the input data as done during training
     input_data = pd.DataFrame([data])
-
-    input_data['Exposure_to_Occupational_Hazards'] = label_encoder.fit_transform(input_data['Exposure_to_Occupational_Hazards'].fillna('No'))
-    input_data['History_Of_Chronic_Respiratory_Diseases'] = label_encoder.fit_transform(input_data['History_Of_Chronic_Respiratory_Diseases'].fillna('No'))
-    input_data['Diagnosed_with_Cancer'] = label_encoder.fit_transform(input_data['Diagnosed_with_Cancer'].fillna('No'))
-    input_data['Lived_In_Highly_Polluted_Area'] = label_encoder.fit_transform(input_data['Lived_In_Highly_Polluted_Area'].fillna('No'))
-    input_data['Shortness_Of_breath'] = label_encoder.fit_transform(input_data['Shortness_Of_breath'].fillna('No'))
-    input_data['Coughed_Blood'] = label_encoder.fit_transform(input_data['Coughed_Blood'].fillna('No'))
-    input_data['Ever_Smoked'] = label_encoder.fit_transform(input_data['Ever_Smoked'].fillna('No'))
-    input_data['Persistent_Cough'] = label_encoder.fit_transform(input_data['Persistent_Cough'].fillna('No'))
-    input_data['Age'] = pd.to_numeric(input_data['Age'], errors='coerce')
-    input_data['Gender'] = label_encoder.fit_transform(input_data['Gender'].fillna('Male'))
 
     feature_columns = ['Age', 'Gender', 'Exposure_to_Occupational_Hazards', 'History_Of_Chronic_Respiratory_Diseases',
                        'Lived_In_Highly_Polluted_Area', 'Shortness_Of_breath', 'Coughed_Blood', 'Persistent_Cough','Ever_Smoked',

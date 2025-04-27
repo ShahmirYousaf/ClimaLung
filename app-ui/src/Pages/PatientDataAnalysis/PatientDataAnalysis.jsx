@@ -6,14 +6,14 @@ import Sidebar from '../../Components/Sidebar/Sidebar';
 
 const PatientDataAnalysis = () => {
   const [age, setAge] = useState('');
-  const [exposure, setExposure] = useState('No');
-  const [symptoms, setSymptoms] = useState('No');
-  const [shortnessOfBreath, setShortnessOfBreath] = useState('No');
-  const [coughedBlood, setCoughedBlood] = useState('No');
-  const [pollutedArea, setPollutedArea] = useState('No');
-  const [gender, setGender] = useState('')
-  const [hasSmoked, setHasSmoked] = useState("no")
-  const [PersistentCough, setPersistentCough] = useState("no");
+  const [exposure, setExposure] = useState(0);
+  const [symptoms, setSymptoms] = useState(0);
+  const [shortnessOfBreath, setShortnessOfBreath] = useState(0);
+  const [coughedBlood, setCoughedBlood] = useState(0);
+  const [pollutedArea, setPollutedArea] = useState(0);
+  const [gender, setGender] = useState(null)
+  const [hasSmoked, setHasSmoked] = useState(0)
+  const [PersistentCough, setPersistentCough] = useState(0);
   const [airQualityData, setAirQualityData] = useState(null);
   const [prediction, setPrediction] = useState(null);
 
@@ -45,7 +45,7 @@ const PatientDataAnalysis = () => {
     }
 
     const patientData = {
-      Age: age,
+      Age: Number(age),
       Gender: gender,
       Exposure_to_Occupational_Hazards: exposure,
       History_Of_Chronic_Respiratory_Diseases: symptoms,
@@ -87,67 +87,72 @@ const PatientDataAnalysis = () => {
 
       <div className="input-group">
         <label>Gender</label>
-        <select value={gender} onChange={(e) => setGender(e.target.value)}>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
+        <select value={gender} onChange={(e) => setGender(Number(e.target.value))}>
+          <option value={1}>Male</option>
+          <option value={0}>Female</option>
         </select>
       </div>
       
 
       <div className="input-group">
         <label>Exposure to Occupational Hazards</label>
-        <select value={exposure} onChange={(e) => setExposure(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-          <option value="Maybe">Maybe</option>
+        <select value={exposure} onChange={(e) => setExposure(Number(e.target.value))}>
+          <option value={2}>Yes</option>
+          <option value={1}>No</option>
+          <option value={0}>Maybe</option>
         </select>
       </div>
 
       <div className="input-group">
         <label>History of Chronic Respiratory Diseases</label>
-        <select value={symptoms} onChange={(e) => setSymptoms(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+        <select value={symptoms} onChange={(e) => setSymptoms(Number(e.target.value))}>
+          <option value={2}>Yes</option>
+          <option value={1}>No</option>
+          <option value={0}>Maybe</option>
         </select>
       </div>
 
       <div className="input-group">
         <label>Lived in a Highly Polluted Area</label>
-        <select value={pollutedArea} onChange={(e) => setPollutedArea(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+        <select value={pollutedArea} onChange={(e) => setPollutedArea(Number(e.target.value))}>
+          <option value={2}>Yes</option>
+          <option value={1}>No</option>
+          <option value={0}>Maybe</option>
         </select>
       </div>
 
       <div className="input-group">
         <label>Shortness of Breath</label>
-        <select value={shortnessOfBreath} onChange={(e) => setShortnessOfBreath(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+        <select value={shortnessOfBreath} onChange={(e) => setShortnessOfBreath(Number(e.target.value))}>
+          <option value={2}>Yes</option>
+          <option value={1}>No</option>
+          <option value={0}>Maybe</option>
         </select>
       </div>
 
       <div className="input-group">
         <label>Persistent Cough</label>
-        <select value={PersistentCough} onChange={(e) => setPersistentCough(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+        <select value={PersistentCough} onChange={(e) => setPersistentCough(Number(e.target.value))}>
+          <option value={2}>Yes</option>
+          <option value={1}>No</option>
+          <option value={0}>Maybe</option>
         </select>
       </div>
 
       <div className="input-group">
         <label>Coughed Blood</label>
-        <select value={coughedBlood} onChange={(e) => setCoughedBlood(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+        <select value={coughedBlood} onChange={(e) => setCoughedBlood(Number(e.target.value))}>
+          <option value={2}>Yes</option>
+          <option value={1}>No</option>
+          <option value={0}>Maybe</option>
         </select>
       </div>
 
       <div className="input-group">
         <label>Ever Smoked</label>
-        <select value={hasSmoked} onChange={(e) => setHasSmoked(e.target.value)}>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
+        <select value={hasSmoked} onChange={(e) => setHasSmoked(Number(e.target.value))}>
+          <option value={1}>Yes</option>
+          <option value={0}>No</option>
         </select>
       </div>
 
