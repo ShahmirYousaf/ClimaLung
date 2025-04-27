@@ -31,11 +31,13 @@ def predict():
     input_data['Lived_In_Highly_Polluted_Area'] = label_encoder.fit_transform(input_data['Lived_In_Highly_Polluted_Area'].fillna('No'))
     input_data['Shortness_Of_breath'] = label_encoder.fit_transform(input_data['Shortness_Of_breath'].fillna('No'))
     input_data['Coughed_Blood'] = label_encoder.fit_transform(input_data['Coughed_Blood'].fillna('No'))
+    input_data['Ever_Smoked'] = label_encoder.fit_transform(input_data['Ever_Smoked'].fillna('No'))
+    input_data['Persistent_Cough'] = label_encoder.fit_transform(input_data['Persistent_Cough'].fillna('No'))
     input_data['Age'] = pd.to_numeric(input_data['Age'], errors='coerce')
+    input_data['Gender'] = label_encoder.fit_transform(input_data['Gender'].fillna('Male'))
 
-    # Feature columns (same as during training)
-    feature_columns = ['Age', 'Exposure_to_Occupational_Hazards', 'History_Of_Chronic_Respiratory_Diseases',
-                       'Lived_In_Highly_Polluted_Area', 'Shortness_Of_breath', 'Coughed_Blood', 
+    feature_columns = ['Age', 'Gender', 'Exposure_to_Occupational_Hazards', 'History_Of_Chronic_Respiratory_Diseases',
+                       'Lived_In_Highly_Polluted_Area', 'Shortness_Of_breath', 'Coughed_Blood', 'Persistent_Cough','Ever_Smoked',
                        'PM2.5 (ug/m^3)', 'PM10 (ug/m^3)', 'AQI', 'NO2 (ppb)', 'SO2 (ppb)', 'CO (ppb)']
     
     input_data = input_data[feature_columns]
@@ -92,12 +94,12 @@ def webhook():
 
     return jsonify({'fulfillmentText': fulfillment_text})
 
-# if __name__ == '__main__':
-#     app.run(port=5000)
+if __name__ == '__main__':
+    app.run(port=5000)
 
     
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+#     app.run()
 
 # Expose the Flask app for Vercel deployment
 # application = app
