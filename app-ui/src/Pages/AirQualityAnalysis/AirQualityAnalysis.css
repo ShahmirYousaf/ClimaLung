@@ -1,43 +1,78 @@
+/* Container for the whole page */
 .dashboard-container {
   display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
 }
+
+/* Sidebar Styles */
 .dashboard-container .sidebar {
-  width: 20%;
+  width: 250px; /* Adjust sidebar width */
   background-color: #f4f4f4;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Optional: for added separation */
+  position: fixed; /* Fix sidebar in place */
+  height: 100%; /* Full-height sidebar */
 }
+
+/* Main content area */
 .dashboard-container .main-content {
-  width: 80%;
+  flex: 1;
+  margin-left: 250px; /* Account for the width of the sidebar */
   padding: 20px;
+  background-color: #fff;
+  box-sizing: border-box;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease; /* Smooth transition when resizing */
 }
+
+/* Header Styling */
 .dashboard-container .main-content .header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
+
 .dashboard-container .main-content .header .logo {
-  width: 50px;
-  margin-right: 10px;
+  width: 70px; /* Adjust logo width */
+  height: auto;
 }
+
 .dashboard-container .main-content .header h1 {
   font-size: 24px;
   color: #333;
+  margin-left: 10px;
+  flex-grow: 1;
 }
+
+/* Card container for air quality */
 .dashboard-container .main-content .cards {
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
+  margin-top: 20px;
 }
+
 .dashboard-container .main-content .cards .card {
-  flex: 1;
+  flex: 1 1 48%;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
+
 .dashboard-container .main-content .cards .card h2 {
   font-size: 20px;
   margin-bottom: 10px;
 }
+
 .dashboard-container .main-content .cards .card .card-btn {
   margin-top: 10px;
   padding: 10px 15px;
@@ -46,23 +81,69 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
+
 .dashboard-container .main-content .cards .card .card-btn:hover {
   background-color: #0056b3;
 }
+
 .dashboard-container .main-content .cards .card .error {
   color: red;
   margin-top: 10px;
 }
-.dashboard-container .main-content .charts {
+
+/* Concentration Table */
+.dashboard-container .main-content .concentration-container {
+  margin-top: 20px;
+}
+
+.dashboard-container .main-content .concentration-container h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #333;
+}
+
+.dashboard-container .main-content .concentration-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.dashboard-container .main-content .concentration-container th,
+.dashboard-container .main-content .concentration-container td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Map Container */
+.dashboard-container .main-content .map-container {
   margin-top: 30px;
 }
-.dashboard-container .main-content .charts .chart-container {
-  padding: 20px;
-  border: 1px solid #ddd;
+
+.map-container .leaflet-container {
   border-radius: 8px;
-  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-.dashboard-container .main-content .charts .chart-container h3 {
-  margin-bottom: 20px;
-}/*# sourceMappingURL=AirQualityAnalysis.css.map */
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .dashboard-container .main-content {
+    margin-left: 0;
+  }
+
+  .dashboard-container .sidebar {
+    width: 100%;
+    position: relative;
+  }
+
+  .dashboard-container .main-content .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-container .main-content .cards .card {
+    flex: 1 1 100%; /* Ensure full-width cards on mobile */
+  }
+}
