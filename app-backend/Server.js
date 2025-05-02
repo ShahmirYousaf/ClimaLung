@@ -4,11 +4,8 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors({
-  origin: 'https://clima-lung.vercel.app', 
-  methods: ['GET', 'POST', 'OPTIONS'],
-allowedHeaders: ['Content-Type', 'Authorization'], 
-}));
+
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
 async function getAccessToken() {
@@ -45,6 +42,9 @@ app.get("/get-token", async (req, res) => {
     }
 });
 
+app.get("/download_models", (req, res) => {
+    res.json({ message: "Downloading AQI Model Files..." });
+  });
 
 app.get("/", (req, res) => {
     res.send("Server is working!");
@@ -52,4 +52,4 @@ app.get("/", (req, res) => {
 
 module.exports = app;
 
-//app.listen(8000, () => console.log("Server running on port 8000"));
+app.listen(8000, () => console.log("Server running on port 8000"));

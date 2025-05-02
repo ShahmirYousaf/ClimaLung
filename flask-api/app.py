@@ -3,10 +3,21 @@ import requests
 from dotenv import load_dotenv
 import os
 import onnxruntime 
+import pandas as pd
 import numpy as np
+from models.airquality import pm25_prediction
+from flask_cors import CORS
+
 from functools import lru_cache
 
 app = Flask(__name__)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 load_dotenv() 
 
@@ -14,6 +25,80 @@ API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 
 MODEL_URL = "https://drive.google.com/uc?export=download&id=1mz1GmedHm4dPDjFV_eYV5gsim2737nGb" 
 MODEL_PATH = "/tmp/lung_health_model.pkl"
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        "message": "Air Quality API is running",
+        "endpoints": {
+            "predict_pm25": "POST /predict_pm25",
+            "download_models": "GET /download_models" 
+        }
+    })
+
+@app.route('/download_models', methods=['GET'])
+def download_models():
+    """Endpoint to manually trigger model downloads"""
+    try:
+        # Create properly formatted SINGLE-ROW DataFrame without list values
+        test_data = pd.DataFrame({
+            "Max Temperature (F)": 72.0,
+            "Avg Temperature (F)": 68.5,
+            "Min Temperature (F)": 65.0,
+            "Max Humidity (%age)": 40,
+            "Avg Humidity (%age)": 30,
+            "Min Humidity (%age)": 20,
+            "AQI": 12,
+            "PM10 (ug/m^3)": 10.5,
+            "O3 (ppb)": 40.0,
+            "SO2 (ppb)": 0.5,
+            "NO2 (ppb)": 5.0,
+            "CO (ppb)": 0.2,
+            "Day": "Wednesday"
+        }, index=[0])  # index=[0] ensures single-row DataFrame
+        
+        # This will trigger model downloads
+        prediction = pm25_prediction(test_data)
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Models are ready for use',
+            'note': 'Models were downloaded automatically on first prediction'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/predict_pm25', methods=['POST'])
+def predict_pm25():
+    try:
+        input_data = request.get_json()
+        new_data = pd.DataFrame([input_data])  # Single row DataFrame
+        
+        prediction = pm25_prediction(new_data)
+        
+        if prediction is not None:
+            return jsonify({
+                'status': 'success',
+                'prediction': prediction,
+                'units': 'μg/m³'
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Prediction failed'
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 400
+
+
 
 @lru_cache(maxsize=1)
 def get_model():
@@ -61,6 +146,9 @@ def preprocess_input(data):
 def predict():
    try:
         # Get and validate input
+        app.logger.info("Received predict_pm25 request")
+        input_data = request.get_json()
+        app.logger.info(f"Input data: {input_data}")
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No input data provided'}), 400
@@ -120,12 +208,18 @@ def webhook():
 
     return jsonify({'fulfillmentText': fulfillment_text})
 
-# if __name__ == '__main__':
+# if __name__ == '__main__':s
 #     app.run(port=5000)
 
     
 if __name__ == '__main__':
-    app.run()
+    #app.run()
+    
+    if not os.path.exists('air_quality_models'):
+        os.makedirs('air_quality_models')
+    
+    app.run(host='0.0.0.0', port=5000, debug=True)
+    application = app  # For Vercel deployment
 
 # Expose the Flask app for Vercel deployment
 # application = app
