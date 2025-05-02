@@ -149,6 +149,10 @@
 }
 /* Prediction Section */
 
+.charts {
+  margin-top: 2rem;
+}
+
 .aqi-prediction-container {
   margin: 2.5rem 0;
   padding: 2rem;
@@ -165,6 +169,7 @@
   font-weight: 600;
   display: flex;
   align-items: center;
+
   gap: 0.75rem;
 }
 
@@ -177,7 +182,8 @@
   display: inline-block;
   grid-template-columns: 1fr 2fr;
   gap: 2rem;
-  align-items: start;
+  align-items: center;
+  padding-left: 50px;
 }
 
 @media (max-width: 768px) {
