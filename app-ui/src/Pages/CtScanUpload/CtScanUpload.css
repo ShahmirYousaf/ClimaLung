@@ -1,0 +1,123 @@
+.ctscan-upload-container-main {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: #F3F4F6;
+  flex-wrap: wrap;
+}
+
+.main-content-ctscan {
+  margin-left: 200px;
+  padding: 30px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.logo-ctscan {
+  width: 150px;
+  height: 150px;
+}
+
+.header-ctscan {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header-ctscan h1 {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.cards-ctscan {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card-ctscan {
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  width: 300px;
+  margin-bottom: 20px;
+}
+
+.card-ctscan h2 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-ctscan p {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.card-btn-ct {
+  background-color: #2482A6;
+  color: white;
+  padding: 11px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.card-btn-ct:hover {
+  background-color: #3c90b1;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .ctscan-upload-container-main {
+    flex-direction: column;
+  }
+  .main-content-ctscan {
+    margin-left: 100px;
+    padding: 15px;
+  }
+  .logo-ctscan {
+    width: 140px;
+    height: 140px;
+  }
+  .header-ctscan h1 {
+    font-size: 22px;
+  }
+  .cards-ctscan {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .card-ctscan {
+    width: 280px;
+    max-width: 400px;
+  }
+  .card-btn-ct {
+    width: 80%;
+    padding: 12px;
+  }
+}
+@media (max-width: 480px) {
+  .header-ctscan h1 {
+    font-size: 20px;
+  }
+  .card-ctscan {
+    width: 100%;
+  }
+  .card-btn-ct {
+    font-size: 14px;
+    padding: 10px;
+  }
+  .logo-ctscan {
+    width: 120px;
+    height: 120px;
+  }
+}/*# sourceMappingURL=CtScanUpload.css.map */

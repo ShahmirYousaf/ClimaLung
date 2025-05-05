@@ -71,7 +71,7 @@ function Sidebar() {
       <nav className="sidebar-nav">
         <h2>Analysis Tools</h2>
         <ul>
-        <li><Monitor size={20} className="custom-icon-monitor" /> CT Scan Analysis</li>  
+        <li><Link to="/ct-scan-analysis" className='sidebar-nav-list'><Monitor size={20} className="custom-icon-monitor" /> CT Scan Analysis</Link></li>  
           <li><Link to="/air-quality-analysis" className='sidebar-nav-list'><Cloud className="custom-icon-cloud" size={20} /> Air Quality Analysis</Link></li> 
           <li><Link to="/patient-data-analysis" className='sidebar-nav-list'><User size={20} className="custom-icon-user" /> Patient Data Analysis </Link></li>  
         </ul>

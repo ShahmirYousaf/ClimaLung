@@ -25,7 +25,11 @@ ChartJS.register(
   Legend
 );
 
-const API_BASE_URL = 'http://localhost:5000';
+//// (USED FOR VERCEL)
+const API_BASE_URL = 'https://clima-lung-bot-api.vercel.app';
+
+//// USED FOR LOCAL
+//const API_BASE_URL = 'http://127.0.0.1:5000';
 
 const DefaultIcon = new L.Icon({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
@@ -86,6 +90,7 @@ const AirQualityAnalysis = () => {
       const weatherResponse = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${process.env.REACT_APP_OPEN_WEATHER_API_KEY}`
       );
+      
       const weatherData = await weatherResponse.json();
 
       // Get air quality data from API-Ninjas instead
@@ -138,9 +143,9 @@ const AirQualityAnalysis = () => {
           headers: { 'X-Api-Key': process.env.REACT_APP_API_NINJAS_KEY }
         }
       );
-      console.log("API Key:", process.env.REACT_APP_API_NINJAS_KEY); console.log("API Key:", process.env.REACT_APP_API_NINJAS_KEY);
+      
       const data = await response.json();
-      console.log('API-Ninjas data:', data);
+      
 
       if (data.overall_aqi) {
         setAirQualityData({

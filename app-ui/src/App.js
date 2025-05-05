@@ -10,6 +10,7 @@ import AuthContext from './AuthContext';
 import PatientDataAnalysis from './Pages/PatientDataAnalysis/PatientDataAnalysis';
 import About from './Pages/About/About';
 import HowToUse from './Pages/HowToUse/HowToUse';
+import CTScanUpload from './Pages/CtScanUpload/CtScanUpload';
 
 function App() {
   const { user, loading } = useContext(AuthContext);
@@ -29,6 +30,7 @@ function App() {
         <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/chatpage" element={user ? <ChatPage /> : <Navigate to="/login" />} />
         <Route path="/air-quality-analysis" element={user ? <AirQualityAnalysis /> : <Navigate to="/login" />} />
+        <Route path="/ct-scan-analysis" element={user ? <CTScanUpload/> : <Navigate to="/login" />} />
         <Route path="/patient-data-analysis" element={user ? <PatientDataAnalysis /> : <Navigate to="/login" />} />
         <Route path="/about" element={user ? <About /> : <Navigate to="/login" />} />
         <Route path="/how-to-use" element={user ? <HowToUse/> : <Navigate to="/login" />} />

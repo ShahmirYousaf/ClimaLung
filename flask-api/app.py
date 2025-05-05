@@ -11,13 +11,16 @@ from flask_cors import CORS
 from functools import lru_cache
 
 app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+
+## NEEDED IF USING LOCALLY
+
+# CORS(app, resources={
+#     r"/*": {
+#         "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+#         "methods": ["GET", "POST", "OPTIONS"],
+#         "allow_headers": ["Content-Type"]
+#     }
+# })
 
 load_dotenv() 
 
@@ -208,18 +211,21 @@ def webhook():
 
     return jsonify({'fulfillmentText': fulfillment_text})
 
-# if __name__ == '__main__':s
+## NEEDED IF USING LOCALLY
+# if __name__ == '__main__':
 #     app.run(port=5000)
 
-    
+
 if __name__ == '__main__':
-    #app.run()
+    app.run()
     
-    if not os.path.exists('air_quality_models'):
-        os.makedirs('air_quality_models')
+    ## (NOT NEEDED FOR NOW)
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    application = app  # For Vercel deployment
+    # if not os.path.exists('air_quality_models'):
+    #     os.makedirs('air_quality_models')
+    
+    # app.run(host='0.0.0.0', port=5000, debug=True)
+    # application = app  # For Vercel deployment
 
 # Expose the Flask app for Vercel deployment
-# application = app
+application = app
