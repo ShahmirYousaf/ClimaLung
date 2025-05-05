@@ -1,4 +1,4 @@
-{
+  {
     "version": 2,
     "builds": [
       {
@@ -12,18 +12,13 @@
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "app.py",
-        "methods": ["POST", "OPTIONS", "GET"],
-        "headers": {
-        "Access-Control-Allow-Origin": "https://clima-lung.vercel.app",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Max-Age": "86400"
-      }
-      },
-      {
-        "src": "/(.*)",
         "dest": "app.py"
       }
-    ]
+    ],
+    "headers": {
+      "Access-Control-Allow-Origin": "https://clima-lung.vercel.app",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    }
   }
+  

@@ -24,15 +24,15 @@ app = Flask(__name__)
 
 # VERCEL NEEDED
 
-CORS(app, supports_credentials=True, resources={
-    r"/predict_pm25": {
-        "origins": ["https://clima-lung.vercel.app"],
-        "methods": ["POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"],
-        "expose_headers": ["*"],
-        "max_age": 86400
-    }
-})
+CORS(app, resources={r"/*": {"origins": "https://clima-lung.vercel.app", "methods": ["GET", "POST", "OPTIONS"], "allow_headers": [
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "X-Requested-With",
+        "X-Authorization",
+        "Cache-Control",
+        "Cookie"
+    ]}})
 
 
 load_dotenv() 
@@ -42,12 +42,14 @@ API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 MODEL_URL = "https://drive.google.com/uc?export=download&id=1mz1GmedHm4dPDjFV_eYV5gsim2737nGb" 
 MODEL_PATH = "/tmp/lung_health_model.pkl"
 
-@app.route('/debug')
-def debug():
-    return jsonify({
-        'headers': dict(request.headers),
-        'origin': request.headers.get('Origin')
-    })
+@app.before_request
+def before_request():
+    if request.method == "OPTIONS":  # Handle preflight request
+        response = jsonify({"message": "OK"})
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
 
 @app.route('/', methods=['GET'])
 def home():
@@ -94,73 +96,34 @@ def download_models():
             'status': 'error',
             'message': str(e)
         }), 500
-    
-@app.route('/predict_pm25', methods=['OPTIONS'])
-def predict_pm25_options():
-    """Handle OPTIONS requests for CORS preflight"""
-    response = jsonify({'status': 'preflight response'})
-    response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
-    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
 
 ## OLD FUNCTION (WANIA)
-
-# @app.route('/predict_pm25', methods=['POST'])
-# def predict_pm25():
-#     try:
-#         input_data = request.get_json()
-#         new_data = pd.DataFrame([input_data])  # Single row DataFrame
-        
-#         prediction = pm25_prediction(new_data)
-        
-#         if prediction is not None:
-#             return jsonify({
-#                 'status': 'success',
-#                 'prediction': prediction,
-#                 'units': 'μg/m³'
-#             }), 200
-#         else:
-#             return jsonify({
-#                 'status': 'error',
-#                 'message': 'Prediction failed'
-#             }), 500
-            
-#     except Exception as e:
-#         return jsonify({
-#             'status': 'error',
-#             'message': str(e)
-#         }), 400
-
-## NEW FUNCTION
 
 @app.route('/predict_pm25', methods=['POST'])
 def predict_pm25():
     try:
         input_data = request.get_json()
-        new_data = pd.DataFrame([input_data])
+        new_data = pd.DataFrame([input_data])  # Single row DataFrame
         
         prediction = pm25_prediction(new_data)
         
-        response = jsonify({
-            'status': 'success',
-            'prediction': prediction,
-            'units': 'μg/m³'
-        })
-        response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response, 200
-        
+        if prediction is not None:
+            return jsonify({
+                'status': 'success',
+                'prediction': prediction,
+                'units': 'μg/m³'
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Prediction failed'
+            }), 500
+            
     except Exception as e:
-        response = jsonify({
+        return jsonify({
             'status': 'error',
             'message': str(e)
-        })
-        response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response, 400
-
+        }), 400
 
 
 @lru_cache(maxsize=1)
