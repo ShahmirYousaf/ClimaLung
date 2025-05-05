@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 # VERCEL NEEDED
 
-CORS(app,supports_credentials=True, resources={
+CORS(app, supports_credentials=True, resources={
     r"/predict_pm25": {
         "origins": ["https://clima-lung.vercel.app"],
         "methods": ["POST", "OPTIONS"],
@@ -101,6 +101,7 @@ def predict_pm25_options():
     response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
     response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 ## OLD FUNCTION (WANIA)
@@ -147,6 +148,7 @@ def predict_pm25():
             'units': 'μg/m³'
         })
         response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 200
         
     except Exception as e:
@@ -155,6 +157,7 @@ def predict_pm25():
             'message': str(e)
         })
         response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 400
 
 
