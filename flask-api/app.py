@@ -24,12 +24,11 @@ app = Flask(__name__)
 
 # VERCEL NEEDED
 
-CORS(app, resources={
+CORS(app,supports_credentials=True, resources={
     r"/predict_pm25": {
         "origins": ["https://clima-lung.vercel.app"],
         "methods": ["POST", "OPTIONS"],
         "allow_headers": ["Content-Type"],
-        "supports_credentials": False,
         "max_age": 86400
     }
 })
