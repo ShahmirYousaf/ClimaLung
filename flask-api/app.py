@@ -22,6 +22,12 @@ app = Flask(__name__)
 #     }
 # })
 
+# VERCEL NEEDED
+
+CORS(app, resources={
+    r"/predict_pm25": {"origins": "https://clima-lung.vercel.app"},  # Replace with your frontend URL
+})
+
 load_dotenv() 
 
 API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
