@@ -29,6 +29,7 @@ CORS(app, supports_credentials=True, resources={
         "origins": ["https://clima-lung.vercel.app"],
         "methods": ["POST", "OPTIONS"],
         "allow_headers": ["Content-Type"],
+        "expose_headers": ["*"],
         "max_age": 86400
     }
 })
