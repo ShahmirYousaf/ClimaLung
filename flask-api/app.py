@@ -26,9 +26,10 @@ app = Flask(__name__)
 
 CORS(app, resources={
     r"/predict_pm25": {
-        "origins": ["https://clima-lung.vercel.app", "https://clima-lung-bot-api.vercel.app"],
+        "origins": ["https://clima-lung.vercel.app"],
         "methods": ["POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
+        "allow_headers": ["Content-Type"],
+        "supports_credentials": True
     }
 })
 
@@ -85,6 +86,16 @@ def download_models():
             'status': 'error',
             'message': str(e)
         }), 500
+    
+@app.route('/predict_pm25', methods=['OPTIONS'])
+def predict_pm25_options():
+    """Handle OPTIONS requests for CORS preflight"""
+    response = jsonify({'status': 'preflight response'})
+    response.headers.add('Access-Control-Allow-Origin', 'https://clima-lung.vercel.app')
+    response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Max-Age', '86400')  # Cache for 24 hours
+    return response
 
 @app.route('/predict_pm25', methods=['POST'])
 def predict_pm25():
