@@ -120,7 +120,7 @@ const AirQualityAnalysis = () => {
 
       const response = await fetch(`${API_BASE_URL}/predict_pm25`, {
         method: 'POST',
-        credentials: 'include',
+        
         headers: {
           'Content-Type': 'application/json',
         },
