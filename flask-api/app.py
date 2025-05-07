@@ -38,10 +38,10 @@ API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 
 MODEL_URL = "https://drive.google.com/uc?export=download&id=1SqEi4b6At-02dy76m9BHvlgq03uUDuAx" 
 ## FOR VERCEL
-#MODEL_PATH = "/tmp/lung_health_model_new.pkl"
+MODEL_PATH = "/tmp/lung_health_model_new.pkl"
 
 ## FOR LOCAL
-MODEL_PATH = os.path.join(os.getcwd(), 'lung_health_model_new.pkl')
+#MODEL_PATH = os.path.join(os.getcwd(), 'lung_health_model_new.pkl')
 
 # Function to download the model from Google Drive
 @lru_cache(maxsize=1)
