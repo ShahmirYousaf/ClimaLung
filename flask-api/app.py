@@ -44,15 +44,6 @@ API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 MODEL_URL = "https://drive.google.com/uc?export=download&id=1mz1GmedHm4dPDjFV_eYV5gsim2737nGb" 
 MODEL_PATH = "/tmp/lung_health_model.pkl"
 
-# @app.before_request
-# def before_request():
-#     if request.method == "OPTIONS":  # Handle preflight request
-#         response = jsonify({"message": "OK"})
-#         response.headers["Access-Control-Allow-Origin"] = "*"
-#         response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-#         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-#         return response
-
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({
@@ -242,7 +233,7 @@ def webhook():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
     
     ## (NOT NEEDED FOR NOW)
     
