@@ -70,7 +70,7 @@ const PatientDataAnalysis = () => {
 
     try {
       //// FOR VERCEL
-      const response = await axios.post('https://clima-lung-bot-api.vercel.app/predict', patientData);
+      const response = await axios.post('https://clima-lung-flask-api.vercel.app/predict', patientData);
 
       console.log(patientData);
       // FOR LOCAL
