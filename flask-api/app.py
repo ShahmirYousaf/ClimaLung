@@ -2,10 +2,12 @@ from flask import Flask, request, jsonify
 import requests
 from dotenv import load_dotenv
 import os
-import onnxruntime
+import pandas as pd
 import numpy as np
 from models.airquality import pm25_prediction
 from flask_cors import CORS
+import joblib
+
 from functools import lru_cache
 
 app = Flask(__name__)
@@ -20,23 +22,68 @@ app = Flask(__name__)
 #     }
 # })
 
+# VERCEL NEEDED
 
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS", "PUT"], "allow_headers": [
+    "X-CSRF-Token", "X-Requested-With", "Accept", "Accept-Version", "Content-Length", "Content-MD5", 
+    "Content-Type", "Date", "X-Api-Version"
+]}})
 
-load_dotenv()
+#CORS(app)
+
+
+load_dotenv() 
 
 API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 
-MODEL_URL = "https://drive.google.com/uc?export=download&id=1mz1GmedHm4dPDjFV_eYV5gsim2737nGb"
-MODEL_PATH = "/tmp/lung_health_model.pkl"
+MODEL_URL = "https://drive.google.com/uc?export=download&id=1SqEi4b6At-02dy76m9BHvlgq03uUDuAx" 
+## FOR VERCEL
+#MODEL_PATH = "/tmp/lung_health_model_new.pkl"
+
+## FOR LOCAL
+MODEL_PATH = os.path.join(os.getcwd(), 'lung_health_model_new.pkl')
+
+# Function to download the model from Google Drive
+@lru_cache(maxsize=1)
+def download_model():
+    """Download and save the model from Google Drive."""
+    try:
+        if not os.path.exists(MODEL_PATH):
+            print("Downloading model from Google Drive...")
+            # Send GET request to download the model
+            response = requests.get(MODEL_URL)
+            response.raise_for_status()  # Raise an error for bad responses
+            with open(MODEL_PATH, 'wb') as f:
+                f.write(response.content)
+            print("Model downloaded successfully.")
+        else:
+            print("Model already exists.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading the model: {e}")
+        raise RuntimeError("Failed to download the model.") from e
+
+# Function to load the model using joblib
+def load_model():
+    """Load the trained model using joblib."""
+    try:
+        # Ensure the model is downloaded
+        download_model()
+        
+        # Load the model using joblib
+        model = joblib.load(MODEL_PATH)
+        return model
+    except Exception as e:
+        print(f"Error loading the model: {e}")
+        return None
 
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({
-        "message": "Air Quality API is running",
+        "message": "Air Quality, Patient Data API is running",
         "endpoints": {
             "predict_pm25": "POST /predict_pm25",
-            "download_models": "GET /download_models"
+            "download_models": "GET /download_models",
+            "predict healt": "POST /predict"
         }
     })
 
@@ -44,8 +91,8 @@ def home():
 def download_models():
     """Endpoint to manually trigger model downloads"""
     try:
-        # Replacing pandas DataFrame with a Python dictionary
-        test_data = {
+        # Create properly formatted SINGLE-ROW DataFrame without list values
+        test_data = pd.DataFrame({
             "Max Temperature (F)": 72.0,
             "Avg Temperature (F)": 68.5,
             "Min Temperature (F)": 65.0,
@@ -59,32 +106,64 @@ def download_models():
             "NO2 (ppb)": 5.0,
             "CO (ppb)": 0.2,
             "Day": "Wednesday"
-        }
-
-        # Trigger model download and prediction
+        }, index=[0])  # index=[0] ensures single-row DataFrame
+        
+        # This will trigger model downloads
         prediction = pm25_prediction(test_data)
-
+        
         return jsonify({
             'status': 'success',
             'message': 'Models are ready for use',
             'note': 'Models were downloaded automatically on first prediction'
         })
-
+        
     except Exception as e:
         return jsonify({
             'status': 'error',
             'message': str(e)
         }), 500
+## NEW 
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        # Get and validate input
+        input_data = request.get_json()
+        if not input_data:
+            return jsonify({'error': 'No input data provided'}), 400
+        
+        app.logger.info(f"Input data: {input_data}")
+        
+        # Preprocess input (assuming you have preprocess_input function)
+        input_array = preprocess_input(input_data)
+        app.logger.info(f"Preprocessed input data: {input_array}")
+        
+        # Load the model
+        model = load_model()
+        if model is None:
+            return jsonify({'error': 'Failed to load the model'}), 500
+        
+        # Predict using the loaded model
+        prediction = model.predict(input_array)
+        app.logger.info(f"Prediction result: {prediction}")
+        
+        # Return the result
+        result = "Poor Lung Health" if prediction[0] == 1 else "Good Lung Health"
+        return jsonify({'prediction': result})
+
+    except Exception as e:
+        app.logger.error(f"Error in prediction: {str(e)}")
+        return jsonify({'error': 'Prediction failed', 'message': str(e)}), 500
+
+## FUNCTION (WANIA)
 
 @app.route('/predict_pm25', methods=['POST'])
 def predict_pm25():
     try:
         input_data = request.get_json()
-        # Replacing pandas DataFrame with a Python dictionary
-        new_data = input_data  # Directly using the received dictionary
-
+        new_data = pd.DataFrame([input_data])  # Single row DataFrame
+        
         prediction = pm25_prediction(new_data)
-
+        
         if prediction is not None:
             return jsonify({
                 'status': 'success',
@@ -96,7 +175,7 @@ def predict_pm25():
                 'status': 'error',
                 'message': 'Prediction failed'
             }), 500
-
+            
     except Exception as e:
         return jsonify({
             'status': 'error',
@@ -104,24 +183,13 @@ def predict_pm25():
         }), 400
 
 
-@lru_cache(maxsize=1)
-def get_model():
-    """Download and cache the ONNX model"""
-    if not os.path.exists(MODEL_PATH):
-        print("Downloading ONNX model...")
-        response = requests.get(MODEL_URL)
-        with open(MODEL_PATH, 'wb') as f:
-            f.write(response.content)
-
-    # Create inference session
-    return onnxruntime.InferenceSession(MODEL_PATH, providers=['CPUExecutionProvider'])
-
 def preprocess_input(data):
     """Convert input data to numpy array (assuming pre-encoded values)"""
     features = [
         'Age',
-        'Gender',
+        'Gender',    
         'Exposure_to_Occupational_Hazards',
+        'Diagnosed_with_Cancer',                 
         'History_Of_Chronic_Respiratory_Diseases',
         'Lived_In_Highly_Polluted_Area',
         'Shortness_Of_breath',
@@ -135,7 +203,7 @@ def preprocess_input(data):
         'SO2 (ppb)',
         'CO (ppb)'
     ]
-
+    
     # Create array with default fallback values
     input_array = np.array([
         float(data.get(feature, 0)) if feature in ['Age', 'PM2.5 (ug/m^3)', 'PM10 (ug/m^3)', 
@@ -143,33 +211,9 @@ def preprocess_input(data):
         else int(data.get(feature, 0))  # For categorical features (0/1/2 encoded)
         for feature in features
     ], dtype=np.float32).reshape(1, -1)
-
+    
     return input_array
 
-@app.route('/predict', methods=['POST'])
-def predict():
-   try:
-        # Get and validate input
-        app.logger.info("Received predict_pm25 request")
-        input_data = request.get_json()
-        app.logger.info(f"Input data: {input_data}")
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No input data provided'}), 400
-
-        # Preprocess input
-        input_array = preprocess_input(data)
-
-        # Get model and predict
-        model = get_model()
-        prediction = model.run(None, {'float_input': input_array})[0]
-
-        # Return result
-        result = "Poor Lung Health" if prediction[0] == 1 else "Good Lung Health"
-        return jsonify({'prediction': result})
-
-   except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 def get_aqi(lat, lon):
     url = f'http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={API_KEY}'
@@ -191,7 +235,7 @@ def get_aqi(lat, lon):
             aqi_text = "Poor"
         elif aqi == 5:
             aqi_text = "Very Poor"
-
+        
         return aqi_text
     else:
         return None
@@ -212,8 +256,21 @@ def webhook():
 
     return jsonify({'fulfillmentText': fulfillment_text})
 
+## NEEDED IF USING LOCALLY
+# if __name__ == '__main__':
+#     app.run(port=5000,debug=True)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+    
+    ## (NOT NEEDED FOR NOW)
+    
+    # if not os.path.exists('air_quality_models'):
+    #     os.makedirs('air_quality_models')
+    
+    # app.run(host='0.0.0.0', port=5000, debug=True)
+    # application = app  # For Vercel deployment
 
 # Expose the Flask app for Vercel deployment
 application = app
