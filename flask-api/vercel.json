@@ -5,7 +5,7 @@
       "src": "app.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "300mb"
+        "maxLambdaSize": "3gb"
       }
     }
   ],
