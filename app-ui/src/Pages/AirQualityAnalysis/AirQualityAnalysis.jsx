@@ -26,10 +26,10 @@ ChartJS.register(
 );
 
 //// (USED FOR VERCEL)
-const API_BASE_URL = 'https://clima-lung-bot-api.vercel.app';
+//const API_BASE_URL = 'https://clima-lung-bot-api.vercel.app';
 
 //// USED FOR LOCAL
-//const API_BASE_URL = 'http://127.0.0.1:5000';
+const API_BASE_URL = 'http://127.0.0.1:5000';
 
 const DefaultIcon = new L.Icon({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),

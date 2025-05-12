@@ -7,7 +7,7 @@
 }
 
 .main-content-dashboard {
-  margin-left: 250px;
+  margin-left: 200px;
   padding: 20px;
   flex-grow: 1;
   display: flex;
@@ -54,6 +54,7 @@
 .card-dashboard:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+  background-color: #c1e6f7;
 }
 
 .card-icon {

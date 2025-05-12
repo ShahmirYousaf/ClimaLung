@@ -8,6 +8,10 @@
 # testing
 /coverage
 
+pyradiomics/
+data/
+LungCancerModel/
+
 # production
 /build
 

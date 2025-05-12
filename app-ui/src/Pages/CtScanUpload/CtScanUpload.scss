@@ -1,134 +1,182 @@
 .ctscan-upload-container-main {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    background-color: #F3F4F6;
-    flex-wrap: wrap;
-  }
-  
-  .main-content-ctscan {
-    margin-left: 200px;
-    padding: 30px;
-    flex-grow: 1;
-    display: flex;
+  display: flex;
+  width: 100%;
+  background-color: #f3f4f6;
+  flex-wrap: wrap;
+  min-height: 100vh; /* Ensure the container takes full height of the viewport */
+  flex-direction: column;
+}
+
+.main-content-ctscan {
+  padding: 30px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+  min-height: 100%; 
+}
+
+.logo-ctscan {
+  width: 150px;
+  height: 150px;
+}
+
+.header-ctscan {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header-ctscan h1 {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.cards-ctscan {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+}
+
+.card-ctscan {
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0.1, 0.1, 0.3);
+  padding: 18px;
+  border-radius: 6px;
+  text-align: center;
+  width: 360px;
+  margin-bottom: 8px;
+}
+
+.card-ctscan-para {
+  font-weight: 500;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.upload-label {
+  font-size: 16px;
+  margin-bottom: 10px;
+  display: block;
+  color: #333;
+  margin-top: 10px;
+}
+
+.upload-input {
+  font-size: 16px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #2482a6;
+  background-color: #e8f3fc;
+  color: #333;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upload-input:hover {
+  background-color: #d0e6f5;
+  border-color: #3c90b1;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.upload-input:focus {
+  outline: none;
+  border-color: #3c90b1;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.loading-message {
+  color: #ffa500;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.error-message {
+  color: #ff0000;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.result-card {
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0.1, 0.1, 0.3);
+  padding: 20px;
+  margin-top: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.result-card h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.result-section {
+  margin-top: 50px;
+  font-size: 18px;
+}
+
+.result-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.image-container {
+  flex: 1;
+  text-align: center;
+}
+
+.image-display {
+  max-width: 100%;
+  max-height: 400px;
+  margin-top: 10px;
+}
+
+.medical-analysis {
+  flex: 2;
+  text-align: center;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 50px;
+}
+
+.insight-section {
+  background-color: #daf3fe;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.insight-section h4 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.insight-section ul {
+  padding-left: 20px;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .result-content {
     flex-direction: column;
     align-items: center;
-    width: 100%;
-    margin-top: 20px;
-  }
-  
-  .logo-ctscan {
-    width: 150px;
-    height: 150px;
-  }
-  
-  .header-ctscan {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-  
-  .header-ctscan h1 {
-    font-size: 28px;
-    font-weight: bold;
-  }
-  
-  .cards-ctscan {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  
-  .card-ctscan {
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0.1, 0.1, 0.3);
-    padding: 20px;
-    border-radius: 5px;
-    text-align: center;
-    width: 300px;
-    margin-bottom: 20px;
-  }
-  
-  .card-ctscan h2 {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .card-ctscan p {
-    margin-bottom: 20px;
-    font-size: 16px;
-  }
-  
-  .card-btn-ct {
-    background-color: #2482A6;
-    color: white;
-    padding: 11px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
   }
 
-  .card-btn-ct:hover {
-    background-color:#3c90b1 ;
+  .analysis-grid {
+    grid-template-columns: 1fr;
   }
-  
-  /* Media Queries for Responsiveness */
-  @media (max-width: 768px) {
-    .ctscan-upload-container-main {
-      flex-direction: column;
-    }
-  
-    .main-content-ctscan {
-      margin-left: 100px;
-      padding: 15px;
-    }
-  
-    .logo-ctscan {
-      width: 140px;
-      height: 140px;
-    }
-  
-    .header-ctscan h1 {
-      font-size: 22px;
-    }
-  
-    .cards-ctscan {
-      flex-direction: column;
-      gap: 15px;
-      width: 100%;
-      margin-top: 20px;
-    }
-  
-    .card-ctscan {
-      width: 280px;
-      max-width: 400px;
-    }
-  
-    .card-btn-ct {
-      width: 80%;
-      padding: 12px;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .header-ctscan h1 {
-      font-size: 20px;
-    }
-  
-    .card-ctscan {
-      width: 100%;
-    }
-  
-    .card-btn-ct {
-      font-size: 14px;
-      padding: 10px;
-    }
-  
-    .logo-ctscan {
-      width: 120px;
-      height: 120px;
-    }
-  }
-  
+}

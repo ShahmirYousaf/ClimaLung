@@ -30,7 +30,10 @@ function ChatPage() {
   const sendMessage = async () => {
     const userMessage = { sender: "user", text: receivedInput };
     setMessages([...messages, userMessage]);
-    const backendURL = "https://clima-lung-backend.vercel.app";
+    //const backendURL = "https://clima-lung-backend.vercel.app";
+
+    /// FOR LOCAL 
+    const backendURL = "http://127.0.0.1:5008";
 
     try {
         // Fetch the access token from the backend

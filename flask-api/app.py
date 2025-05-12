@@ -7,8 +7,22 @@ import numpy as np
 from models.airquality import pm25_prediction
 from flask_cors import CORS
 import joblib
-
 from functools import lru_cache
+import argparse
+import io
+import tempfile
+from medpy.filter.smoothing import anisotropic_diffusion
+from scipy.ndimage import median_filter
+from skimage import measure, morphology
+import scipy.ndimage as ndimage
+from sklearn.cluster import KMeans
+import cv2
+from io import BytesIO
+from PIL import Image
+from googleapiclient.discovery import build
+from werkzeug.utils import secure_filename
+import base64
+from models.lung_cancer_processing import GetPrediction
 
 app = Flask(__name__)
 
@@ -24,12 +38,12 @@ app = Flask(__name__)
 
 # VERCEL NEEDED
 
-CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS", "PUT"], "allow_headers": [
-    "X-CSRF-Token", "X-Requested-With", "Accept", "Accept-Version", "Content-Length", "Content-MD5", 
-    "Content-Type", "Date", "X-Api-Version"
-]}})
+# CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS", "PUT"], "allow_headers": [
+#     "X-CSRF-Token", "X-Requested-With", "Accept", "Accept-Version", "Content-Length", "Content-MD5", 
+#     "Content-Type", "Date", "X-Api-Version"
+# ]}})
 
-#CORS(app)
+CORS(app)
 
 
 load_dotenv() 
@@ -38,10 +52,227 @@ API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 
 MODEL_URL = "https://drive.google.com/uc?export=download&id=1SqEi4b6At-02dy76m9BHvlgq03uUDuAx" 
 ## FOR VERCEL
-MODEL_PATH = "/tmp/lung_health_model_new.pkl"
+#MODEL_PATH = "/tmp/lung_health_model_new.pkl"
 
 ## FOR LOCAL
-#MODEL_PATH = os.path.join(os.getcwd(), 'lung_health_model_new.pkl')
+MODEL_PATH = os.path.join(os.getcwd(), 'lung_health_model_new.pkl')
+
+# Lung Cancer Detection Things
+UPLOAD_FOLDER = tempfile.mkdtemp()
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'npy'}
+GOOGLE_DRIVE_URL ='https://drive.google.com/uc?export=download&id={file_id}'
+META_CSV_FILE = 'https://drive.google.com/file/d/16w4XCFLNpFpQtTVyNj3JdtargHHCN1HN/view?usp=drive_link'
+MASKS_FOLDER_URL = 'https://drive.google.com/drive/folders/10wdWoCIOVwYMVjknLw4P0HmplJ-ZuirE?usp=drive_link'
+SEARCH_URL = "https://www.googleapis.com/drive/v3/files"
+DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id={file_id}"
+meta_data=None
+
+def AllowedFiles(filename):
+    ext = filename.rsplit('.', 1)[-1].lower()
+    return ext in ALLOWED_EXTENSIONS
+
+
+# UPLOAD_FOLDER = tempfile.mkdtemp()
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'npy'}
+
+META_CSV_ID = '16w4XCFLNpFpQtTVyNj3JdtargHHCN1HN'
+DRIVE_API_URL = "https://www.googleapis.com/drive/v3/files"
+DRIVE_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id={file_id}"
+
+
+# API_KEY = 'AIzaSyCxONrSLHBJ2-rXRsaokrpTYmy4sC-ZSxA'  # Public API key
+# DRIVE_SERVICE = build('drive', 'v3', developerKey=API_KEY)
+
+
+def load_metadata():
+
+    response = requests.get(DRIVE_DOWNLOAD_URL.format(file_id=META_CSV_ID))
+    response.raise_for_status()
+    return pd.read_csv(io.StringIO(response.text))
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'npy'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def validate_png(filepath):
+    """Verify the file is a valid PNG image"""
+    try:
+        with Image.open(filepath) as img:
+            img.verify()  # Verify it's a valid image
+        return True
+    except Exception:
+        return False
+
+DATA_FOLDER = os.path.join(app.root_path, 'data')
+@app.route('/analyze', methods=['GET','POST'])
+def analyze():
+    try:
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+            
+        file = request.files['file']
+        if not file.filename:
+            return jsonify({'error': 'No filename provided'}), 400
+        
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'Invalid file type. Allowed: PNG, JPG, JPEG, NPY'}), 400 
+        
+        filename=secure_filename(file.filename)
+        print(filename,"filename")
+     
+        ext = os.path.splitext(filename)[1]  
+        img_file = 'LIDC-IDRI-'+filename.split('_')[0]+'/'+filename.split('.')[0]
+        
+    
+
+        mask_file,label= FindMaskAndLabel(img_file)
+        img_file=img_file+ext
+        ct_scan_path = os.path.join(DATA_FOLDER, 'scans', img_file)
+        os.makedirs(os.path.dirname(ct_scan_path), exist_ok=True)
+        file.save(ct_scan_path)
+        
+        mask_file=os.path.normpath(mask_file)
+        ct_scan_path=os.path.normpath(ct_scan_path)
+
+        mask_file_path =os.path.join(DATA_FOLDER, 'Mask', mask_file)
+        meta_file=os.path.join(DATA_FOLDER,'meta_info.csv')
+        print("maskfile path ", mask_file_path)
+        print("label",label)
+
+       
+        
+       
+        if not os.path.exists(mask_file_path):
+            print(f"File not found at {mask_file_path}")
+            return jsonify({'error': 'Mask file not found'}), 404
+        
+            
+        if not validate_png(mask_file_path):
+            print(f"Invalid PNG file at {mask_file_path}")
+            return jsonify({'error': 'Invalid PNG file'}), 400
+        
+
+        
+        results=GetPrediction(ct_scan_path,mask_file_path,label)
+            
+        # return send_file(mask_file_path, mimetype='image/png')
+        return jsonify(results)
+        
+    except Exception as e:
+        print(f"Error in /analyze: {str(e)}")  # Log the full error
+        return jsonify({
+            'error': 'Internal server error',
+            'details': str(e)
+        }), 500
+        
+    
+    
+
+
+def FindMaskAndLabel(full_path):
+    try:
+        meta_data = load_metadata()
+        print(full_path, "full")
+        matches = meta_data[meta_data['original_image'].str.strip() == full_path]
+        if matches.empty:
+            return None
+            
+        mask_filename = matches['mask_image'].iloc[0] + '.png'.replace('\\','/')
+        label= matches['is_cancer'].iloc[0]
+        
+        print(mask_filename, "mask name")
+
+        return mask_filename, label
+        
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return None
+
+    
+
+
+
+
+def segment_lung(img):
+    
+    mean = np.mean(img)
+    std = np.std(img)
+    img = img-mean
+    img = img/std
+    
+    middle = img[100:400,100:400] 
+    mean = np.mean(middle)  
+    max = np.max(img)
+    min = np.min(img)
+    #remove the underflow bins
+    img[img==max]=mean
+    img[img==min]=mean
+    
+    #apply median filter
+    img= median_filter(img,size=3)
+    #apply anistropic non-linear diffusion filter- This removes noise without blurring the nodule boundary
+    img= anisotropic_diffusion(img)
+    
+    kmeans = KMeans(n_clusters=2).fit(np.reshape(middle,[np.prod(middle.shape),1]))
+    centers = sorted(kmeans.cluster_centers_.flatten())
+    threshold = np.mean(centers)
+    thresh_img = np.where(img<threshold,1.0,0.0)  # threshold the image
+    eroded = morphology.erosion(thresh_img,np.ones([4,4]))
+    dilation = morphology.dilation(eroded,np.ones([10,10]))
+    labels = measure.label(dilation)
+    label_vals = np.unique(labels)
+    regions = measure.regionprops(labels)
+    good_labels = []
+    for prop in regions:
+        B = prop.bbox
+        if B[2]-B[0]<475 and B[3]-B[1]<475 and B[0]>40 and B[2]<472:
+            good_labels.append(prop.label)
+    mask = np.ndarray([512,512],dtype=np.int8)
+    mask[:] = 0
+    
+    for N in good_labels:
+        mask = mask + np.where(labels==N,1,0)
+    mask = morphology.dilation(mask,np.ones([10,10]))
+    
+    return mask*img
+
+
+
+
+def PreprocessImage(image):
+
+    if AllowedFiles(image):
+        ext = image.rsplit('.', 1)[-1].lower()
+
+        if ext=='jpg' or ext=='jpeg' or ext=='png':
+            ct_scan=cv2.imread(image, cv2.IMREAD_GRAYSCALE)
+
+def display_image_in_terminal(image_path, width=100):
+    # Open and resize the image
+    img = Image.open(image_path)
+    aspect_ratio = img.height / img.width
+    new_height = int(width * aspect_ratio)
+    img = img.resize((width, new_height))
+    
+    # Convert to grayscale
+    img = img.convert("L")  # 'L' mode = grayscale
+    
+    # ASCII characters (from dark to light)
+    ascii_chars = "@%#*+=-:. "
+    
+    # Convert pixels to ASCII
+    pixels = np.array(img)
+    ascii_str = ""
+    for row in pixels:
+        for pixel in row:
+            ascii_str += ascii_chars[pixel // 32]  # 256/8 = 32
+        ascii_str += "\n"
+    
+    print(ascii_str)
 
 # Function to download the model from Google Drive
 @lru_cache(maxsize=1)
@@ -257,12 +488,12 @@ def webhook():
     return jsonify({'fulfillmentText': fulfillment_text})
 
 ## NEEDED IF USING LOCALLY
-# if __name__ == '__main__':
-#     app.run(port=5000,debug=True)
-
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000,debug=True)
+
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
     
     ## (NOT NEEDED FOR NOW)
     
@@ -273,4 +504,4 @@ if __name__ == '__main__':
     # application = app  # For Vercel deployment
 
 # Expose the Flask app for Vercel deployment
-application = app
+#application = app
