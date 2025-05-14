@@ -68,7 +68,7 @@ function CTScanUpload() {
             <label className="upload-label">Choose a CT scan image:</label>
             <input
               type="file"
-              accept=".npy,.jpg,.jpeg,.png"
+              accept=".npy,.jpg,.jpeg,.png,.jfif"
               onChange={handleFileUpload}
               className="upload-input"
               disabled={loading}

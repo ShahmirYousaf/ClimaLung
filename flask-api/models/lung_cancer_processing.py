@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 import albumentations as albu
 from albumentations.pytorch import ToTensorV2
 import SimpleITK as sitk
-import radiomics 
 from radiomics import firstorder, glcm, glrlm, glszm, shape2D
 import cv2
 import matplotlib.pyplot as plt
@@ -20,6 +19,9 @@ import atexit
 from io import BytesIO
 import base64
 from PIL import Image
+from models.CNNCABM import LungCancerBinaryClassifier
+from models.lung_mask_generation import LungMaskGenerator
+from pathlib import Path
 
 logging.getLogger('radiomics').setLevel(logging.CRITICAL)
 warnings.filterwarnings("ignore", category=UserWarning, message="GLCM is symmetrical")
@@ -36,13 +38,13 @@ lung_cancer_model_path = os.path.join(current_dir, '..', 'LungCancerModel')
 lung_cancer_model_path = os.path.abspath(lung_cancer_model_path)
 
 class LIDCDataset(Dataset):
-    def __init__(self, ct_scan_path, mask, label, normalize=True, augment=False):
-        
+    def __init__(self, ct_scan_path, mask, normalize=True, augment=False):
+        print("INSIDE THIS PART inside start of lidc idri")
         self.ct_path = ct_scan_path
         self.mask_path = mask
         self.normalize = normalize
         self.augment = augment
-        self.label=label
+        # self.label=label
 
 
     def __len__(self):
@@ -52,13 +54,17 @@ class LIDCDataset(Dataset):
 
        
         
-        if self.ct_path.lower().endswith(('.png','jpg','.jpeg')):
+        if Path(self.ct_path).suffix.lower() != '.npy':
             ct_scan=cv2.imread(self.ct_path, cv2.IMREAD_GRAYSCALE)
         else:
             ct_scan=np.load(self.ct_path)
 
-        nodule_mask=cv2.imread(self.mask_path, cv2.IMREAD_GRAYSCALE)
+        nodule_mask = cv2.imread(self.mask_path, cv2.IMREAD_GRAYSCALE)
         nodule_mask = np.where(nodule_mask > 0, 1, 0).astype(np.uint8)
+
+    # Resize everything to 512x512 upfront
+        ct_scan = cv2.resize(ct_scan, (512, 512), interpolation=cv2.INTER_LINEAR)
+        nodule_mask = cv2.resize(nodule_mask, (512, 512), interpolation=cv2.INTER_NEAREST)
        
         # full_scan=ct_scan
         # nodule_mask = np.load(mask_path)
@@ -69,7 +75,10 @@ class LIDCDataset(Dataset):
         radiomics_features = self.extract_radiomics(ct_scan, nodule_mask)
         radiomics_features_=radiomics_features
         radiomics_features = np.array(list(radiomics_features.values()))
+        print("INSIDE THIS PART inside start of lidc idri before crop")
         ct_scan_crop, nodule_mask_crop = self.crop_lung_region(ct_scan, nodule_mask)
+        print("INSIDE THIS PART inside start of lidc idri after  crop")
+
         ct_scan_crop=self.NormalizeScan(ct_scan_crop)
         ct_scan=self.NormalizeScan(ct_scan)
 
@@ -78,12 +87,13 @@ class LIDCDataset(Dataset):
         ct_scan_tensor = transformed['image']
         nodule_mask_tensor = transformed['mask'].unsqueeze(0)
 
-        if self.label.lower()== 'true':
-            label = 1
-        elif self.label.lower() == 'false':
-            label = 0
+        # if self.label.lower()== 'true':
+        #     label = 1
+        # elif self.label.lower() == 'false':
+        #     label = 0
+       
    
-        return ct_scan_tensor, nodule_mask_tensor, radiomics_features, label, ct_scan,nodule_mask, radiomics_features_
+        return ct_scan_tensor, nodule_mask_tensor, radiomics_features, ct_scan,nodule_mask, radiomics_features_
 
     def NormalizeScan(self, image, crop_padding=20):
         
@@ -138,6 +148,7 @@ class LIDCDataset(Dataset):
 
         return extracted_features
     def crop_lung_region(self, image, mask):
+        print("INSIDE THIS PART")
         """Crop the lung region to focus on relevant parts of the CT scan"""
         mask = np.uint8(mask)
         _, binary_mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)
@@ -146,7 +157,9 @@ class LIDCDataset(Dataset):
         if contours:
             x, y, w, h = cv2.boundingRect(max(contours, key=cv2.contourArea))
             x_start, y_start, x_end, y_end = self.expand_bboxx(x, y, w, h, image.shape)
-            return image[y_start:y_end, x_start:x_end], mask[y_start:y_end, x_start:x_end]
+            return image[y_start:y_end, x_start:x_end], mask[y_start:y_end, x_start:x_end]  
+            print("INSIDE THIS PART")
+        
         return image, mask
 
     def expand_bboxx(self, x, y, w, h, img_shape, padding=60):
@@ -159,155 +172,15 @@ class LIDCDataset(Dataset):
 
 
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import OneCycleLR
 
-class ChannelAttention(nn.Module):
-    def __init__(self, in_channels, reduction_ratio=16):
-        super().__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.max_pool = nn.AdaptiveMaxPool2d(1)
-        
-        self.fc = nn.Sequential(
-            nn.Linear(in_channels, in_channels // reduction_ratio, bias=False),
-            nn.ReLU(inplace=True),
-            nn.Linear(in_channels // reduction_ratio, in_channels, bias=False),
-            nn.Sigmoid()
-        )
+def GetPrediction(ct_scan_path, mask_file_path):
 
-    def forward(self, x):
-        b, c, _, _ = x.size()
-        avg_out = self.fc(self.avg_pool(x).view(b, c))
-        max_out = self.fc(self.max_pool(x).view(b, c))
-        out = avg_out + max_out
-        return x * out.view(b, c, 1, 1)
-
-class SpatialAttention(nn.Module):
-    def __init__(self, kernel_size=7):
-        super().__init__()
-        self.conv = nn.Conv2d(2, 1, kernel_size=kernel_size, padding=kernel_size//2)
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        avg_out = torch.mean(x, dim=1, keepdim=True)
-        max_out, _ = torch.max(x, dim=1, keepdim=True)
-        concat = torch.cat([avg_out, max_out], dim=1)
-        spatial_out = self.conv(concat)
-        return x * self.sigmoid(spatial_out)
-
-class CBAM(nn.Module):
-    def __init__(self, channels):
-        super().__init__()
-        self.ca = ChannelAttention(channels)
-        self.sa = SpatialAttention()
-    
-    def forward(self, x):
-        x = self.ca(x)
-        x = self.sa(x)
-        return x
-
-class LungCancerBinaryClassifier(nn.Module):
-    def __init__(self, input_channels=1, radiomics_dim=12):
-        super().__init__()
-        
-        # CNN Backbone with more conservative architecture
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(input_channels, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32),
-            nn.GELU(),
-            nn.Dropout2d(0.2)
-        )
-        
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64),
-            nn.GELU(),
-            nn.Dropout2d(0.3)
-        )
-        
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),
-            nn.GELU(),
-            nn.Dropout2d(0.4)
-        )
-        
-        self.pool = nn.MaxPool2d(2, 2)
-        self.cbam = CBAM(128)
-        
-        # Flattened size calculation
-        self.conv_out_features = self._get_conv_output_features(input_channels)
-        
-        # Radiomics Pathway with more conservative architecture
-        self.radiomics_fc = nn.Sequential(
-            nn.Linear(radiomics_dim, 128),
-            nn.BatchNorm1d(128),
-            nn.GELU(),
-            nn.Dropout(0.5),
-            nn.Linear(128, 64),
-            nn.LayerNorm(64),
-            nn.GELU(),
-            nn.Dropout(0.4))
-        
-        # Classifier for binary classification
-        self.classifier = nn.Sequential(
-            nn.Linear(self.conv_out_features + 64, 128),
-            nn.BatchNorm1d(128),
-            nn.GELU(),
-            nn.Dropout(0.5),
-            nn.Linear(128, 1)  # Single output for binary classification
-        )
-        
-        self._initialize_weights()
-
-    def _get_conv_output_features(self, input_channels):
-        with torch.no_grad():
-            dummy_input = torch.zeros(1, input_channels, 224, 224)
-            dummy_output = self._forward_features(dummy_input)
-            return dummy_output.view(1, -1).size(1)
-
-    def _forward_features(self, x):
-        x = self.pool(self.conv1(x))
-        x = self.pool(self.conv2(x))
-        x = self.pool(self.conv3(x))
-        x = self.cbam(x)
-        return x
-
-    def _initialize_weights(self):
-        
-        for m in self.modules():
-            
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')  # Using relu as proxy
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.xavier_normal_(m.weight, gain=nn.init.calculate_gain('relu'))
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
+    processor = LungMaskGenerator()
+    processor.process_and_save_mask(ct_scan_path, mask_file_path)
 
 
-    def forward(self, x, radiomics_features):
-        x = self._forward_features(x)
-        x = x.view(x.size(0), -1)
-        radiomics = self.radiomics_fc(radiomics_features.float())
-        combined = torch.cat((x, radiomics), dim=1)
-        return torch.sigmoid(self.classifier(combined))  # Sigmoid for binary classification
-
-
-
-    
-
-def GetPrediction(ct_scan_path, mask,label_):
-
-    dataset=LIDCDataset(ct_scan_path, mask,label_)
-    ct_scan, nodule_mask, radiomics,label, full_scan, full_mask, rads=dataset[0]
+    dataset=LIDCDataset(ct_scan_path, mask_file_path)
+    ct_scan, nodule_mask, radiomics, full_scan, full_mask, rads=dataset[0]
     # ct_display = ct_scan.squeeze().numpy()  # Remove channel dim (1,224,224) -> (224,224)
     # mask_display = nodule_mask.squeeze().numpy()  # Remove channel dim if present
 
@@ -321,9 +194,10 @@ def GetPrediction(ct_scan_path, mask,label_):
     with torch.no_grad():
         output = model(ct_scan, radiomics)
         prob = torch.sigmoid(output).item()
+        print("prob of cancer", prob)
         pred = 1 if prob > 0.5 else 0
 
-    print(f"predicition: {pred} label : {label}")
+    print(f"predicition: {pred} ")
 
 
 #     feature_keys = [
@@ -335,146 +209,176 @@ def GetPrediction(ct_scan_path, mask,label_):
 #     radiomics_dict = dict(zip(feature_keys, radiomics))
 
     scan_base64 = highlight_nodule_in_scan(full_scan, full_mask)
+    print("INSIDE THIS PART")
     # mask_base64 = mark_nodule_on_full_scan(full_scan, full_mask)
 
     print("dictionarryyyyyy", rads)
 
-    medical_insights = generate_medical_insights(rads, label)
+    medical_insights = generate_medical_insights(rads, pred, prob)
     
     return {
         'scan_image': scan_base64,
-        'prediction': label,
+        'prediction': pred,
         'medical_insights': medical_insights
     }
 
 
-    # img = Image.open(BytesIO(img_data))
+    img = Image.open(BytesIO(img_data))
     
-    # # Display the image using matplotlib
-    # plt.imshow(img)
-    # plt.axis('off')
-    # plt.title("Nodule Detection Result")
-    # plt.show()
+    # Display the image using matplotlib
+    plt.imshow(img)
+    plt.axis('off')
+    plt.title("Nodule Detection Result")
+    plt.show()
 
 
-    # print(ct_display.shape)
-    # plt.figure(figsize=(10, 5))
+    print(ct_display.shape)
+    plt.figure(figsize=(10, 5))
 
-    # # Display CT scan
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(ct_display, cmap='gray')
-    # plt.title(f'CT Scan (Label: {label})')
-    # plt.axis('off')
+    # Display CT scan
+    plt.subplot(1, 2, 1)
+    plt.imshow(ct_display, cmap='gray')
+    plt.title(f'CT Scan (Label: {label})')
+    plt.axis('off')
 
-    # # Display Nodule Mask
-    # plt.subplot(1, 2, 2)
-    # plt.imshow(mask_display, cmap='gray')
-    # plt.title('Nodule Mask')
-    # plt.axis('off')
+    # Display Nodule Mask
+    plt.subplot(1, 2, 2)
+    plt.imshow(mask_display, cmap='gray')
+    plt.title('Nodule Mask')
+    plt.axis('off')
 
-    # plt.tight_layout()
-    # plt.show()
+    plt.tight_layout()
+    plt.show()
 
-def generate_medical_insights(radiomics, label):
-    """Generate comprehensive clinical insights from radiomics features"""
+
+
+def generate_medical_insights(radiomics,label, prob):
+    """Generate comprehensive clinical insights from radiomics features with label integration"""
     insights = []
     
-    # 1. Comprehensive Morphological Analysis
+    # 1. Comprehensive Morphological Analysis (now label-sensitive)
     morph_findings = []
     
-    # Perimeter-based size assessment
     perimeter = radiomics.get('Perimeter', 0)
+    size_description = (f"substantial size (Perimeter: {perimeter:.1f} mm)" if perimeter > 50 else
+                       f"moderate dimensions (Perimeter: {perimeter:.1f} mm)" if perimeter > 20 else
+                       f"relatively small size (Perimeter: {perimeter:.1f} mm)")
     
-    if perimeter > 50:
-        morph_findings.append(f"substantial size (Perimeter: {perimeter:.1f} mm)")
-    elif perimeter > 20:
-        morph_findings.append(f"moderate dimensions (Perimeter: {perimeter:.1f} mm)")
-    else:
-        morph_findings.append(f"relatively small size (Perimeter: {perimeter:.1f} mm)")
-    
-    # Shape characterization
+    if label == 1 and perimeter > 30:
+        size_description += " (concerning for malignancy given size)"
+    morph_findings.append(size_description)
+
     sphericity = radiomics.get('Sphericity', 0)
     elongation = radiomics.get('Elongation', 0)
     
-    if sphericity > 0.85 and elongation < 1.2:
-        morph_findings.append("highly spherical morphology suggesting well-circumscribed nature")
-    elif sphericity < 0.7 and elongation > 1.5:
-        morph_findings.append("irregular, elongated configuration with potential lobulations/spiculations")
-    else:
-        morph_findings.append("intermediate shape complexity")
+    shape_analysis = ("highly spherical morphology suggesting well-circumscribed nature" 
+                     if sphericity > 0.85 and elongation < 1.2 else
+                     "irregular, elongated configuration with potential lobulations/spiculations" 
+                     if sphericity < 0.7 and elongation > 1.5 else
+                     "intermediate shape complexity")
+    
+    if label == 1 and (sphericity < 0.7 or elongation > 1.5):
+        shape_analysis += " - malignant features present"
+    morph_findings.append(shape_analysis)
     
     insights.append({
         'title': 'Detailed Morphological Profile',
         'findings': morph_findings
     })
     
-    # 2. Advanced Texture Characterization
+    # 2. Advanced Texture Characterization (enhanced with label context)
     texture_findings = []
     
     entropy = radiomics.get('Entropy', 0)
-    texture_findings.append(
-        f"entropy value of {entropy:.2f} indicates {describe_entropy_pattern(entropy)}"
-    )
+    entropy_text = f"entropy value of {entropy:.2f} indicates {describe_entropy_pattern(entropy)}"
+    if label == 1 and entropy > 5:
+        entropy_text += " (typical of malignant lesions)"
+    texture_findings.append(entropy_text)
     
     contrast = radiomics.get('Contrast', 0)
     correlation = radiomics.get('Correlation', 0)
     
-    if contrast > 15 and correlation < 0.3:
-        texture_findings.append("marked textural heterogeneity with poor structural organization")
-    elif contrast < 5 and correlation > 0.7:
-        texture_findings.append("uniform texture with highly organized internal architecture")
-    else:
-        texture_findings.append("moderate textural variation with some structural regularity")
+    texture_pattern = ("marked textural heterogeneity with poor structural organization" 
+                      if contrast > 15 and correlation < 0.3 else
+                      "uniform texture with highly organized internal architecture" 
+                      if contrast < 5 and correlation > 0.7 else
+                      "moderate textural variation with some structural regularity")
+    
+    if label == 1 and (contrast > 10 or correlation < 0.4):
+        texture_pattern += " - suspicious for malignancy"
+    texture_findings.append(texture_pattern)
     
     insights.append({
         'title': 'Quantitative Texture Evaluation',
         'findings': texture_findings
     })
     
-    # 3. Statistical Feature Analysis
+    # 3. Statistical Feature Analysis (label-adjusted)
     stat_findings = []
     
     skewness = radiomics.get('Skewness', 0)
+    skewness_text = (f"asymmetric intensity distribution (Skewness: {skewness:.2f})" 
+                    if abs(skewness) > 1 else 
+                    f"relatively symmetric intensity distribution (Skewness: {skewness:.2f})")
+    
+    if label == 1 and abs(skewness) > 0.8:
+        skewness_text += " (common in malignant nodules)"
+    stat_findings.append(skewness_text)
+    
     kurtosis = radiomics.get('Kurtosis', 0)
+    kurtosis_text = ("peaked intensity distribution suggesting focal variations" 
+                    if kurtosis > 3.5 else 
+                    "flattened intensity distribution" 
+                    if kurtosis < 2.5 else 
+                    "moderate intensity distribution")
     
-    if abs(skewness) > 1:
-        stat_findings.append(f"asymmetric intensity distribution (Skewness: {skewness:.2f})")
-    else:
-        stat_findings.append(f"relatively symmetric intensity distribution (Skewness: {skewness:.2f})")
-    
-    if kurtosis > 3.5:
-        stat_findings.append("peaked intensity distribution suggesting focal variations")
-    elif kurtosis < 2.5:
-        stat_findings.append("flattened intensity distribution")
+    if label == 1 and kurtosis > 3:
+        kurtosis_text += " - malignant pattern observed"
+    stat_findings.append(kurtosis_text)
     
     insights.append({
         'title': 'Statistical Distribution Patterns',
         'findings': stat_findings
     })
     
-    # 4. Clinical Integration with Risk Stratification
+    # 4. Clinical Integration with Label-Aware Risk Stratification
     clinical_findings = []
     
-    risk_score = calculate_malignancy_risk_score(radiomics)
+    risk_score = round(prob,2)
     risk_category = "high" if risk_score > 0.7 else "intermediate" if risk_score > 0.4 else "low"
     
-    clinical_findings.append(
-        f"Composite malignancy risk score: {risk_score:.2f} ({risk_category} risk category)"
-    )
+    risk_text = f"Composite malignancy risk score: {risk_score:.2f} ({risk_category} risk category)"
+    if label is not None:
+        risk_text += f" [Pathology: {'Malignant' if label == 1 else 'Benign'}]"
+    clinical_findings.append(risk_text)
     
-    # Feature-specific red flags
-    if (sphericity < 0.65 and entropy > 5.5) or (skewness < -1.2 and contrast > 12):
-        clinical_findings.append("Multiple concerning features present including irregular shape and textural heterogeneity")
+    # Label-sensitive red flags
+    concerning_features = []
+    if (sphericity < 0.65 and entropy > 5.5):
+        concerning_features.append("irregular shape with high heterogeneity")
+    if (skewness < -1.2 and contrast > 12):
+        concerning_features.append("asymmetric texture with high contrast")
     
+    if concerning_features:
+        concern_text = "Concerning features: " + ", ".join(concerning_features)
+        if label == 1:
+            concern_text += " (consistent with malignancy)"
+        clinical_findings.append(concern_text)
+    
+    # Label-guided recommendations
     recommendations = []
     if risk_category == "high":
         recommendations.append("Tissue sampling strongly recommended")
-        recommendations.append("Consider PET-CT for metabolic evaluation if clinically indicated")
+        if label == 1:
+            recommendations.append("Immediate diagnostic workup indicated")
     elif risk_category == "intermediate":
         recommendations.append("Short-term follow-up imaging (3-6 months) advised")
-        recommendations.append("Multidisciplinary review recommended")
+        if label == 1:
+            recommendations.append("Consider accelerated follow-up schedule")
     else:
         recommendations.append("Routine follow-up may be sufficient")
+        if label == 1:
+            recommendations.append("Review recommended - low risk score contradicts pathology")
     
     clinical_findings.append("Management considerations: " + "; ".join(recommendations))
     
@@ -487,18 +391,15 @@ def generate_medical_insights(radiomics, label):
 
 def describe_entropy_pattern(entropy):
     """Provide nuanced description of entropy patterns"""
-    if entropy > 7:
-        return "very high heterogeneity, potentially suggesting complex internal architecture"
-    elif entropy > 5:
-        return "moderate heterogeneity, indicating some textural variation"
-    elif entropy > 3:
-        return "mild heterogeneity with predominantly uniform texture"
-    else:
-        return "very homogeneous internal structure"
+    return ("very high heterogeneity, potentially suggesting complex internal architecture" if entropy > 7 else
+            "moderate heterogeneity, indicating some textural variation" if entropy > 5 else
+            "mild heterogeneity with predominantly uniform texture" if entropy > 3 else
+            "very homogeneous internal structure")
 
-def calculate_malignancy_risk_score(radiomics):
-    """Calculate composite risk score based on multiple features"""
-    weights = {
+def calculate_malignancy_risk_score(radiomics, label=None):
+    """Calculate composite risk score with label-informed weighting"""
+    # Base weights from radiomics literature
+    base_weights = {
         'Sphericity': -0.3,
         'Elongation': 0.4,
         'Entropy': 0.25,
@@ -507,7 +408,16 @@ def calculate_malignancy_risk_score(radiomics):
         'Correlation': -0.2
     }
     
-    # Get feature values with defaults
+    # Label-adjusted weights
+    if label == 1:  # Malignant cases
+        weights = {k: v * 1.3 for k, v in base_weights.items()}  # Amplify malignant features
+        weights.update({'Entropy': 0.35, 'Contrast': 0.25})  # Override specific weights
+    elif label == 0:  # Benign cases
+        weights = {k: v * 0.7 for k, v in base_weights.items()}  # Attenuate benign features
+    else:
+        weights = base_weights
+    
+    # Feature normalization (unchanged)
     features = {
         'Sphericity': radiomics.get('Sphericity', 0.5),
         'Elongation': radiomics.get('Elongation', 1.0),
@@ -517,43 +427,33 @@ def calculate_malignancy_risk_score(radiomics):
         'Correlation': radiomics.get('Correlation', 0.5)
     }
     
-    # Calculate normalized values (0-1 range)
     normalized = {
-        'Sphericity': (features['Sphericity'] - 0.5) / 0.5,  # 0-1 range for 0.5-1.0 sphericity
-        'Elongation': (features['Elongation'] - 1.0) / 2.0,  # 0-1 range for 1.0-3.0 elongation
-        'Entropy': (features['Entropy'] - 3.0) / 4.0,       # 0-1 range for 3.0-7.0 entropy
-        'Contrast': (features['Contrast'] - 5.0) / 15.0,    # 0-1 range for 5.0-20.0 contrast
-        'Skewness': min(features['Skewness'], 1.5) / 1.5,   # 0-1 range for 0-1.5 skewness
-        'Correlation': (0.8 - features['Correlation']) / 0.8  # 0-1 range for 0-0.8 correlation
+        'Sphericity': max(0, min(1, (features['Sphericity'] - 0.5) / 0.5)),
+        'Elongation': max(0, min(1, (features['Elongation'] - 1.0) / 2.0)),
+        'Entropy': max(0, min(1, (features['Entropy'] - 3.0) / 4.0)),
+        'Contrast': max(0, min(1, (features['Contrast'] - 5.0) / 15.0)),
+        'Skewness': max(0, min(1, features['Skewness'] / 1.5)),
+        'Correlation': max(0, min(1, (0.8 - features['Correlation']) / 0.8))
     }
     
-    # Clip all values to 0-1 range
-    for key in normalized:
-        normalized[key] = max(0, min(1, normalized[key]))
-    
-    # Calculate weighted score
+    # Calculate weighted score with label consideration
     score = sum(weights[feat] * normalized[feat] for feat in weights)
     
-    # Scale to 0-1 range
-    return max(0, min(1, (score + 1) / 2))
+    # Label-based score adjustment
+    if label == 1:
+        score = min(1.0, score * 2)  # Increase risk for known malignant cases
+    elif label == 0:
+        score = max(0.0, score * 0.8)  # Decrease risk for known benign cases
+    
+    return score
+    # return max(0, min(1, (score + 1) / 2) ) # Ensure 0-1 range
 
-# Helper functions for medical descriptions
-def describe_size(perimeter):
-    size = perimeter / np.pi  # Approximate diameter
-    if size < 5: return "a small focus (<5mm)"
-    elif 5 <= size < 10: return "a subcentimeter dimension (5-9mm)"
-    elif 10 <= size < 20: return "an intermediate size (10-19mm)"
-    else: return "a large configuration (≥20mm)"
 
-def describe_shape(sphericity, elongation):
-    if sphericity > 0.9: return "a highly spherical morphology"
-    elif elongation > 1.5: return "an elongated, irregular contour"
-    else: return "moderately complex borders"
 
-def describe_glcm(correlation):
-    if correlation > 0.8: return "high structural uniformity"
-    elif correlation > 0.5: return "moderate tissue regularity"
-    else: return "disorganized tissue patterns"
+
+
+
+
 
 
 

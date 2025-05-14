@@ -90,7 +90,7 @@ def load_metadata():
     response.raise_for_status()
     return pd.read_csv(io.StringIO(response.text))
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'npy'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'npy', 'jfif'}
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -125,38 +125,42 @@ def analyze():
      
         ext = os.path.splitext(filename)[1]  
         img_file = 'LIDC-IDRI-'+filename.split('_')[0]+'/'+filename.split('.')[0]
-        
-    
+        mask_file=filename.split('.')[0]+'.png'
 
-        mask_file,label= FindMaskAndLabel(img_file)
+        
         img_file=img_file+ext
-        ct_scan_path = os.path.join(DATA_FOLDER, 'scans', img_file)
+        ct_scan_path = os.path.join(DATA_FOLDER, 'scans', filename)
         os.makedirs(os.path.dirname(ct_scan_path), exist_ok=True)
         file.save(ct_scan_path)
-        
-        mask_file=os.path.normpath(mask_file)
-        ct_scan_path=os.path.normpath(ct_scan_path)
 
-        mask_file_path =os.path.join(DATA_FOLDER, 'Mask', mask_file)
-        meta_file=os.path.join(DATA_FOLDER,'meta_info.csv')
-        print("maskfile path ", mask_file_path)
-        print("label",label)
+        mask_file_path=os.path.join(DATA_FOLDER, 'mask', mask_file)
+        os.makedirs(os.path.dirname(mask_file_path), exist_ok=True)
+
+        results=GetPrediction(ct_scan_path, mask_file_path)
+        
+        # mask_file=os.path.normpath(mask_file)
+        # ct_scan_path=os.path.normpath(ct_scan_path)
+
+        # mask_file_path =os.path.join(DATA_FOLDER, 'Mask', mask_file)
+        # meta_file=os.path.join(DATA_FOLDER,'meta_info.csv')
+        # print("maskfile path ", mask_file_path)
+        # print("label",label)
 
        
         
        
-        if not os.path.exists(mask_file_path):
-            print(f"File not found at {mask_file_path}")
-            return jsonify({'error': 'Mask file not found'}), 404
+        # if not os.path.exists(mask_file_path):
+        #     print(f"File not found at {mask_file_path}")
+        #     return jsonify({'error': 'Mask file not found'}), 404
         
             
-        if not validate_png(mask_file_path):
-            print(f"Invalid PNG file at {mask_file_path}")
-            return jsonify({'error': 'Invalid PNG file'}), 400
+        # if not validate_png(mask_file_path):
+        #     print(f"Invalid PNG file at {mask_file_path}")
+        #     return jsonify({'error': 'Invalid PNG file'}), 400
         
 
         
-        results=GetPrediction(ct_scan_path,mask_file_path,label)
+        
             
         # return send_file(mask_file_path, mimetype='image/png')
         return jsonify(results)
