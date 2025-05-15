@@ -33,7 +33,7 @@ function ChatPage() {
     //const backendURL = "https://clima-lung-backend.vercel.app";
 
     /// FOR LOCAL 
-    const backendURL = "http://127.0.0.1:5008";
+    const backendURL = "http://127.0.0.1:8000";
 
     try {
         // Fetch the access token from the backend
