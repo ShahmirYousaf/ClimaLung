@@ -41,7 +41,7 @@ function CTScanUpload() {
       }
     } catch (err) {
       console.error('Error:', err);
-      setError(err.response?.data?.error || 'Failed to analyze CT scan');
+      setError("Further verification needed to confirm results.Please consult a medical professional");
     } finally {
       setLoading(false);
     }

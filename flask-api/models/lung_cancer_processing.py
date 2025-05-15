@@ -75,10 +75,9 @@ class LIDCDataset(Dataset):
         radiomics_features = self.extract_radiomics(ct_scan, nodule_mask)
         radiomics_features_=radiomics_features
         radiomics_features = np.array(list(radiomics_features.values()))
-        print("INSIDE THIS PART inside start of lidc idri before crop")
+    
         ct_scan_crop, nodule_mask_crop = self.crop_lung_region(ct_scan, nodule_mask)
-        print("INSIDE THIS PART inside start of lidc idri after  crop")
-
+        
         ct_scan_crop=self.NormalizeScan(ct_scan_crop)
         ct_scan=self.NormalizeScan(ct_scan)
 
@@ -159,7 +158,8 @@ class LIDCDataset(Dataset):
             x_start, y_start, x_end, y_end = self.expand_bboxx(x, y, w, h, image.shape)
             return image[y_start:y_end, x_start:x_end], mask[y_start:y_end, x_start:x_end]  
             print("INSIDE THIS PART")
-        
+        else:
+            print("no countours found")
         return image, mask
 
     def expand_bboxx(self, x, y, w, h, img_shape, padding=60):
@@ -195,7 +195,7 @@ def GetPrediction(ct_scan_path, mask_file_path):
         output = model(ct_scan, radiomics)
         prob = torch.sigmoid(output).item()
         print("prob of cancer", prob)
-        pred = 1 if prob > 0.5 else 0
+        pred = 1 if prob > 0.55 else 0
 
     print(f"predicition: {pred} ")
 
@@ -204,9 +204,7 @@ def GetPrediction(ct_scan_path, mask_file_path):
 #     "Mean", "Energy", "Entropy", "Kurtosis", "Skewness", "Variance",
 #     "Elongation", "Sphericity", "Perimeter",
 #     "Contrast", "Correlation"
-# ]
-
-#     radiomics_dict = dict(zip(feature_keys, radiomics))
+#      radiomics_dict = dict(zip(feature_keys, radiomics))
 
     scan_base64 = highlight_nodule_in_scan(full_scan, full_mask)
     print("INSIDE THIS PART")
@@ -343,10 +341,15 @@ def generate_medical_insights(radiomics,label, prob):
     
     # 4. Clinical Integration with Label-Aware Risk Stratification
     clinical_findings = []
+
+    if label==0:
+        risk_score=0
+    else:
+        risk_score = round(prob,2)
     
-    risk_score = round(prob,2)
     risk_category = "high" if risk_score > 0.7 else "intermediate" if risk_score > 0.4 else "low"
     
+    print(prob, "risk score")
     risk_text = f"Composite malignancy risk score: {risk_score:.2f} ({risk_category} risk category)"
     if label is not None:
         risk_text += f" [Pathology: {'Malignant' if label == 1 else 'Benign'}]"
@@ -396,7 +399,7 @@ def describe_entropy_pattern(entropy):
             "mild heterogeneity with predominantly uniform texture" if entropy > 3 else
             "very homogeneous internal structure")
 
-def calculate_malignancy_risk_score(radiomics, label=None):
+def calculate_malignancy_risk_score(radiomics, label, ):
     """Calculate composite risk score with label-informed weighting"""
     # Base weights from radiomics literature
     base_weights = {
@@ -443,7 +446,7 @@ def calculate_malignancy_risk_score(radiomics, label=None):
     if label == 1:
         score = min(1.0, score * 2)  # Increase risk for known malignant cases
     elif label == 0:
-        score = max(0.0, score * 0.8)  # Decrease risk for known benign cases
+        score = 0  # Decrease risk for known benign cases
     
     return score
     # return max(0, min(1, (score + 1) / 2) ) # Ensure 0-1 range
